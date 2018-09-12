@@ -1,6 +1,18 @@
 # flask-quiz
 
+## Install
+```
+pip install -r requirements.txt
+```
+
 ## Run
+
+### Production
+```
+flask run
+```
+
+### Development
 ```
 export FLASK_ENV=development
 flask run
@@ -12,10 +24,16 @@ flask run --reload --debugger
 
 ## Routes
 ```
-/                 # main menu/ select a quiz
+# available
+/                 # redirect to login
+/index            # redirect to login
+/auth/login       # login page
+/auth/logout      # logout, redirect to login
 /quiz             # quiz menu
-/quiz/{quiz}      # instructions for {quiz}
 /quiz/{quiz}/{#}  # quiz question #
+
+# future release
+/quiz/{quiz}      # instructions for {quiz}
 /import           # quiz import form
 /user             # user management
 /user/{user}      # statistics for {user}

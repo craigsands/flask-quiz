@@ -1,0 +1,16 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block title %}
+    {% if title %}{{ title }} - Quick Quizzes{% else %}{{ 'Welcome to Quick Quizzes!' }}{% endif %}
+{% endblock %}
+
+{% block content %}
+    <a href="{{ url_for('main.index') }}">Home</a>
+    {% if not session.get('username') %}
+    <a href="{{ url_for('auth.login') }}">Login</a>
+    {% else %}
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
+    <p>Hello {{ session.get('username') }}!</p>
+    {% endif %}
+    {% block app_content %}{% endblock %}
+{% endblock %}

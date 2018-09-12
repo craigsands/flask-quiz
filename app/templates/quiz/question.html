@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <h1>Quiz - {{ quiz_title }}</h1>
+    <div class="row">
+        <div class="col-md-4">
+            <div>Question {{ question_num }} of {{ num_questions }}</div>
+            <div>Section: {{ section }}</div>
+            <div>
+                Given the {{ known_key }}
+                is {{ known_value }},
+                what is the {{ unknown_key }}?
+            </div>
+        </div>
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+{% endblock %}
