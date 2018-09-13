@@ -11,8 +11,20 @@ Example Excel sheet:
 | Florida	| 21312211 | 3
 
 Example question bank:
+1. Given the __State__ is __California__, what is the __2018 Population__?
+1. Given the __State__ is __Texas__, what is the __2018 Population__?
+1. Given the __State__ is __Florida__, what is the __2018 Population__?
+1. Given the __2018 Population__ is __39776830__, what is the __State__?
+1. Given the __2018 Population__ is __28704330__, what is the __State__?
+1. Given the __2018 Population__ is __21312211__, what is the __State__?
 1. Given the __State__ is __California__, what is the __Rank__?
+1. Given the __State__ is __Texas__, what is the __Rank__?
+1. Given the __State__ is __Florida__, what is the __Rank__?
+1. Given the __Rank__ is __1__, what is the __State__?
+1. Given the __Rank__ is __2__, what is the __State__?
+1. Given the __Rank__ is __3__, what is the __State__?
 
+*Note: The application assumes that the first column contains the 'key' data point. Thus all questions include that data point in either the prompt or the answer.* 
 
 ## Install
 ```
@@ -57,7 +69,7 @@ flask run --reload --debugger
 Phase | Hours | Status
 :--- | ---: | ---
 Flask page with sample data & score tracking | 5 | :heavy_check_mark:
-Simple Excel-driven quiz | ~~3~~ 2 | :heavy_check_mark:
+Simple Excel-driven quiz | <del>3</del> 2 | :heavy_check_mark:
 Percentage points off | <del>3</del> 2 |
 Directory-based Quiz selection | <del>2</del> 0 | :heavy_check_mark:
 Database-driven quiz history | <del>4</del> 6 |
