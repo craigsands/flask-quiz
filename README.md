@@ -24,7 +24,17 @@ Example question bank:
 1. Given the __Rank__ is __2__, what is the __State__?
 1. Given the __Rank__ is __3__, what is the __State__?
 
-*Note: The application assumes that the first column contains the 'key' data point. Thus all questions include that data point in either the prompt or the answer.* 
+**Note**: The application assumes that the first column contains the 'key' data point (e.g., *State*). Thus all questions include that data point in either the prompt or the answer.
+
+Absent from the question bank are the following, as they do not include the 'key' data point, and can be more ambiguous:
+
+1. Given the __2018 Population__ is __39776830__, what is the __Rank__?
+1. Given the __2018 Population__ is __28704330__, what is the __Rank__?
+1. Given the __2018 Population__ is __21312211__, what is the __Rank__?
+1. Given the __Rank__ is __1__, what is the __2018 Population__?
+1. Given the __Rank__ is __2__, what is the __2018 Population__?
+1. Given the __Rank__ is __3__, what is the __2018 Population__?
+
 
 ## Install
 ```
