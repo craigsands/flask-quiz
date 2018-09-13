@@ -1,5 +1,19 @@
 # flask-quiz
 
+A quiz generator and runner. Import metrics from Excel to dynamically generate questions and answers. Data from each sheet is combined to build a question bank per Excel file.
+
+Example Excel sheet:
+
+| State	| 2018 Population	| Rank
+| --- | :---: | ---:
+| California | 39776830 | 1
+| Texas	| 28704330 | 2
+| Florida	| 21312211 | 3
+
+Example question bank:
+1. Given the __State__ is __California__, what is the __Rank__?
+
+
 ## Install
 ```
 pip install -r requirements.txt
@@ -43,12 +57,12 @@ flask run --reload --debugger
 Phase | Hours | Status
 :--- | ---: | ---
 Flask page with sample data & score tracking | 5 | :heavy_check_mark:
-Simple Excel-driven quiz | <del>*3*</del> 2 | :heavy_check_mark:
-Percentage points off | <del>*3*</del> 2 |
-Directory-based Quiz selection | <del>*2*</del> 0 | :heavy_check_mark:
-Database-driven quiz history | <del>*4*</del> 6 |
+Simple Excel-driven quiz | ~~3~~ 2 | :heavy_check_mark:
+Percentage points off | <del>3</del> 2 |
+Directory-based Quiz selection | <del>2</del> 0 | :heavy_check_mark:
+Database-driven quiz history | <del>4</del> 6 |
 Material Design-based GUI | 5 |
-**Total** | **<del>*22*</del> 20**
+**Total** | **<del>22</del> 20**
 
 ### Flask page with sample data & score tracking
 The website engine is driven by the Flask microframework. Hard-coded sample data will be converted to questions dynamically on page load, and sessions will be used to track answers and scores.
