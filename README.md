@@ -40,15 +40,15 @@ flask run --reload --debugger
 ```
 
 ## Phases
-Phase | Hours
-:--- | ---:
-Flask page with sample data & score tracking | 5
-Simple Excel-driven quiz | 3
-Percentage points off | 3
-Directory-based Quiz selection | 2
-Database-driven quiz history | 4
-Material Design-based GUI | 5
-**Total** | **22**
+Phase | Hours | Status
+:--- | ---: | ---
+Flask page with sample data & score tracking | 5 | :heavy_check_mark:
+Simple Excel-driven quiz | <del>3</del> 2 | :heavy_check_mark:
+Percentage points off | <del>3</del> 2 |
+Directory-based Quiz selection | <del>2</del> 0 | :heavy_check_mark:
+Database-driven quiz history | <del>4</del> 6 |
+Material Design-based GUI | 5 |
+**Total** | **<del>22</del> 20**
 
 ### Flask page with sample data & score tracking
 The website engine is driven by the Flask microframework. Hard-coded sample data will be converted to questions dynamically on page load, and sessions will be used to track answers and scores.
