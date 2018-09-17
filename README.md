@@ -103,4 +103,6 @@ Database functionality includes storing user info, including previous test score
 
 ### Material Design-based GUI
 This phase will convert the text-based, simple web page to having dynamic elements, custom buttons, and a consistent style throughout all pages.
- 
+
+## Database Design
+![](docs/static/db_diagram.jpg)
