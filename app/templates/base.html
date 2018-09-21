@@ -8,6 +8,11 @@
     {% endif %}
 {% endblock %}
 
+{% block styles %}
+{{ super() }}
+<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+{% endblock %}
+
 {% block messages %}
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -25,5 +30,5 @@
 {% endblock %}
 
 {% block content %}
-    {% block app_content %}{% endblock %}
+    {% block app_content %}
 {% endblock %}

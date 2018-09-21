@@ -15,7 +15,7 @@ from app.question.tables import SortableQuestionTable
 @bp.route('/')
 @login_required
 def index():
-    items_per_page = 20
+    items_per_page = 10
     sort = request.args.get('sort', 'id')
     order = request.args.get('direction', 'asc')
     reverse = (order == 'desc')

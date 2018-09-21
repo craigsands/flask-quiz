@@ -2,11 +2,16 @@ from flask import url_for
 from flask_table import Table, Col
 
 
-class SortableQuestionTable(Table):
+class BootstrapTable(Table):
+    classes = ['table', 'table-striped']
+
+
+class SortableQuestionTable(BootstrapTable):
     id = Col('ID')
     prompt = Col('Prompt')
     correct_answer = Col('Correct Answer')
     subject_id = Col('Subject', 'subject_name')
+
     allow_sort = True
 
     def sort_url(self, col_key, reverse=False):
