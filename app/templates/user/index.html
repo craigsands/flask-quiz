@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block app_content %}
+    <h1>Users</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Date Created</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

@@ -1,62 +1,96 @@
-import os
-from openpyxl import load_workbook
-from flask import session
-from flask_login import current_user, UserMixin
-#from app import login
+from datetime import datetime
+from flask_login import UserMixin
+from sqlalchemy.ext.associationproxy import association_proxy
+from werkzeug.security import generate_password_hash, check_password_hash
+from app import db, login
 
 
-class Quiz(object):
-    # get file:
-    # with current_app.open_instance_resource('application.cfg') as f:
+class Score(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    score = db.Column(db.Float)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    def __init__(self, title=None):
-        self.title = title
-        self._datasets = []
-        self.questions = []
-        self.submitted_answers = []
-
-    def build_questions(self):
-        for dataset in self._datasets:
-            for entry in dataset['entries']:
-                headers = list(dataset['headers'])
-                primary_key = headers.pop(0)
-                primary_value = entry.pop(0)
-                for index, value in enumerate(entry):
-                    self.questions.append({
-                        'section': dataset['section'],
-                        'known': {primary_key: primary_value},
-                        'unknown': headers[index],
-                        'correct_answer': value
-                    })
-                    # self.questions.append({
-                    #     'section': dataset['section'],
-                    #     'known': {headers[index]: value},
-                    #     'unknown': primary_key,
-                    #     'correct_answer': primary_value
-                    # })
-
-    def load_from_excel(self, filename):
-        self.title = os.path.splitext(os.path.basename(filename))[0]
-        wb = load_workbook(filename)
-
-        for sheet in wb:
-            headers = sheet[1]  # get headers from row 1
-
-            dataset = {
-                'section': sheet.title,
-                'headers': [x.value for x in headers],
-                'entries': []
-            }
-
-            for row in sheet.iter_rows(min_row=2):  # iterate from row 2
-                dataset['entries'].append([x.value for x in row])
-
-            self._datasets.append(dataset)
-
-        return self
+    def __repr__(self):
+        return '<Score %r, User %r, Quiz %r>' % (
+            self.score, self.user_id, self.quiz_id)
 
 
-class User(UserMixin):
-    def __init__(self):
-        self.id = None
-        self.username = None
+class Quiz(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), index=True, unique=True)
+    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    public = db.Column(db.Boolean, default=True)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    # association proxy of "quiz_question" collection
+    # to "question" attribute
+    questions = association_proxy('quiz_questions', 'question')
+
+    def __repr__(self):
+        return '<Quiz %r>' % self.name
+
+
+class QuizQuestion(db.Model):
+    __tablename__ = 'quiz_question'
+    question_id = db.Column(db.Integer, db.ForeignKey('question.id'), primary_key=True)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), primary_key=True)
+
+    # bidirectional attribute/collection of "quiz"/"quiz_questions"
+    user = db.relationship(
+        Quiz,
+        backref=db.backref("quiz_questions", cascade="all, delete-orphan")
+    )
+
+    # reference to the "Question" object
+    question = db.relationship("Question")
+
+
+class Question(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'))
+    prompt = db.Column(db.String(256))
+    correct_answer = db.Column(db.String(64))
+
+    # bidirectional many-to-one reference for "Subject" object
+    subject = db.relationship('Subject', back_populates='questions')
+
+    def __repr__(self):
+        return '<Question %r>' % self.id
+
+    # proxy the 'name' attribute from the 'subject' relationship
+    subject_name = association_proxy('subject', 'name')
+
+
+class Subject(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), index=True, unique=True)
+
+    # bidirectional many-to-one reference for "Question" objects
+    questions = db.relationship('Question', back_populates='subject')
+
+    def __repr__(self):
+        return '<Subject %r>' % self.name
+
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), index=True, unique=True)
+    pw_hash = db.Column(db.String(128))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    scores = db.relationship('Score', backref='user', lazy='dynamic')
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+    def set_password(self, password):
+        self.pw_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.pw_hash, password)
+
+
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))

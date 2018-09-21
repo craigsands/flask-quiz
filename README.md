@@ -1,6 +1,6 @@
 # flask-quiz
 
-A quiz generator and runner. Import metrics from Excel to dynamically generate questions and answers. Data from each sheet is combined to build a question bank per Excel file.
+A quiz generator and runner. Upload metrics from Excel to dynamically generate questions and answers. Data from each sheet is combined to build a question bank per Excel file.
 
 Example Excel sheet:
 
@@ -70,7 +70,7 @@ flask run --reload --debugger
 
 # future release
 /quiz/{quiz}      # instructions for {quiz}
-/import           # quiz import form
+/quiz/upload      # quiz upload form
 /user             # user management
 /user/{user}      # statistics for {user}
 ```
@@ -90,16 +90,16 @@ Material Design-based GUI | 5 |
 The website engine is driven by the Flask microframework. Hard-coded sample data will be converted to questions dynamically on page load, and sessions will be used to track answers and scores.
 
 ### Simple Excel-driven quiz
-This phase adds the ability to import Excel files as quiz data.
+This phase adds the ability to upload Excel files as quiz data.
 
 ### Percentage points off
 This phase adds the mathematical logic for determining the percentage off the guess was from the correct answer, and incorporating it into the score.
 
 ### Directory-based Quiz selection
-A menu page will be added to select from a list of Excel files found in a specified folder. After database integration, this will be used for importing Excel data as quizzes to be saved.
+A menu page will be added to select from a list of Excel files found in a specified folder. After database integration, this will be used for uploading Excel data as quizzes to be saved.
 
 ### Database-driven quiz history
-Database functionality includes storing user info, including previous test scores, as well as saving imported quiz data.
+Database functionality includes storing user info, including previous test scores, as well as saving uploaded quiz data.
 
 ### Material Design-based GUI
 This phase will convert the text-based, simple web page to having dynamic elements, custom buttons, and a consistent style throughout all pages.
