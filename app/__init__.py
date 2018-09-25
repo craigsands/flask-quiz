@@ -4,10 +4,12 @@ from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_login import current_user, LoginManager
 from flask_nav import Nav
-from flask_nav.elements import Navbar, View
+from flask_nav.elements import Navbar, Subgroup, View
+from flask_restful import Resource, Api
 from flask_sqlalchemy import SQLAlchemy
 
 
+api = Api()
 bootstrap = Bootstrap()
 db = SQLAlchemy()
 login = LoginManager()
@@ -17,15 +19,20 @@ nav = Nav()
 
 @nav.navigation()
 def main_nav():
-    n = Navbar(
-        __name__,
-        View('Home', 'main.index')
-    )
+    n = Navbar(__name__)
     if current_user.is_authenticated:
         n.items.extend([
-            View('Stats', 'user.get_stats', username=current_user.username),
-            View('Quizzes', 'quiz.index'),
-            View('Questions', 'question.index'),
+            View('Home', 'user.get_info', username=current_user.username),
+            Subgroup(
+                'Quizzes',
+                View('Manage', 'quiz.index'),
+                View('Create Quiz', 'quiz.create')
+            ),
+            Subgroup(
+                'Questions',
+                View('Manage', 'question.index'),
+                View('Upload', 'question.upload')
+            ),
             View('Logout', 'auth.logout')
         ])
     else:
@@ -65,6 +72,7 @@ def create_app(test_config=None):
             raise
 
     # initialize extensions
+    api.init_app(app)
     bootstrap.init_app(app)
     db.init_app(app)
     login.init_app(app)

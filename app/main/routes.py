@@ -7,6 +7,6 @@ from app.main import bp
 @bp.route('/')
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for('user.get_stats',
+        return redirect(url_for('user.get_info',
                                 username=current_user.username))
-    return redirect(url_for('quiz.index'))
+    return redirect(url_for('auth.login'))

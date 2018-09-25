@@ -9,7 +9,7 @@ from app import db
 from app.models import Question, Subject
 from app.question import bp
 from app.question.forms import UploadQuizForm
-from app.question.tables import SortableQuestionTable
+from app.tables import SortableQuestionTable
 
 
 @bp.route('/')
@@ -60,14 +60,6 @@ def upload():
                 filepath = os.path.join(upload_dir, filename)
                 f.save(filepath)
                 current_app.logger.info('file saved to {}'.format(filepath))
-
-                # name, ext = os.path.splitext(filename)
-                # quiz = Quiz.query.filter_by(name=name).first()
-                # if not quiz:
-                #     quiz = Quiz(name=name)
-                #     db.session.add(quiz)
-                #     db.session.flush()
-                #     print('quiz id: ', quiz.id)
 
                 # uploading a file creates (num_columns-1)*2*rows questions
                 # questions are added to questions table

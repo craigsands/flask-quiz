@@ -2,9 +2,14 @@
 
 {% block app_content %}
     <h1>{{ title }}</h1>
-    <ul>
-        {% for quiz in quizzes %}
-        <li><a href="{{ url_for('quiz.start', quiz_name=quiz.name) }}">{{ quiz.name }}</a></li>
-        {% endfor %}
-    </ul>
+    <div><a href="{{ url_for('quiz.create') }}">New Quiz</a></div>
+    {% if prev_url %}
+    <a href="{{ first_url }}">First</a>
+    <a href="{{ prev_url }}">Previous</a>
+    {% endif %}
+    {% if next_url %}
+    <a href="{{ next_url }}">Next</a>
+    <a href="{{ last_url }}">Last</a>
+    {% endif %}
+    {{ table }}
 {% endblock %}

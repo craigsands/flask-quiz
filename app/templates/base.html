@@ -1,5 +1,7 @@
 {% extends 'bootstrap/base.html' %}
 
+{% block html_attribs %} lang="en"{% endblock %}
+
 {% block title %}
     {% if title %}
         {{ title }} - Quick Quizzes
@@ -9,11 +11,15 @@
 {% endblock %}
 
 {% block styles %}
-{{ super() }}
-<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+{{super()}}
+<!--<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">-->
 {% endblock %}
 
-{% block messages %}
+{% block navbar %}
+    {{nav.main_nav.render()}}
+{% endblock %}
+
+{% block content %}
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul class=flashes>
@@ -23,12 +29,10 @@
             </ul>
         {% endif %}
     {% endwith %}
-{% endblock %}
-
-{% block navbar %}
-    {{nav.main_nav.render()}}
-{% endblock %}
-
-{% block content %}
     {% block app_content %}{% endblock %}
+{% endblock %}
+
+{% block scripts %}
+<!--<script src="..."></script>-->
+{{super()}}
 {% endblock %}

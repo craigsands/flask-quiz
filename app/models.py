@@ -20,9 +20,15 @@ class Score(db.Model):
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, unique=True)
-    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    public = db.Column(db.Boolean, default=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    #public = db.Column(db.Boolean, default=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    # bidirectional many-to-one reference for "User" object
+    user = db.relationship('User', back_populates='quizzes')
+
+    # proxy the 'name' attribute from the 'subject' relationship
+    user_name = association_proxy('user', 'name')
 
     # association proxy of "quiz_question" collection
     # to "question" attribute
@@ -56,11 +62,11 @@ class Question(db.Model):
     # bidirectional many-to-one reference for "Subject" object
     subject = db.relationship('Subject', back_populates='questions')
 
-    def __repr__(self):
-        return '<Question %r>' % self.id
-
     # proxy the 'name' attribute from the 'subject' relationship
     subject_name = association_proxy('subject', 'name')
+
+    def __repr__(self):
+        return '<Question %r>' % self.id
 
 
 class Subject(db.Model):
@@ -80,6 +86,9 @@ class User(UserMixin, db.Model):
     pw_hash = db.Column(db.String(128))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     scores = db.relationship('Score', backref='user', lazy='dynamic')
+
+    # bidirectional many-to-one reference for "Quiz" objects
+    quizzes = db.relationship('Quiz', back_populates='user')
 
     def __repr__(self):
         return '<User %r>' % self.username

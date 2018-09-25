@@ -167,24 +167,30 @@
             </tr>
         </tfoot>
     </table>
-<form>
+</form>
     
 <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
 <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-    var table = $('#example').DataTable();
- 
-    $('#example tbody').on( 'click', 'tr', function () {
-        $(this).toggleClass('selected');
+        console.log($('body'));
+        var table = $('#example').DataTable();
+
+        $('#example tbody').on( 'click', 'tr', function () {
+            $(this).toggleClass('selected');
+        } );
+
+        $('#button').click( function () {
+            alert(table.rows('.selected').data().length)  //.each(function() {                //??????????????????????
+                //alert($(this).text());
+            //});
+          //var data = table.$('.selected td:first-child')  //.serialize();
+            //data.each(function() {
+            //    alert($(this).text());
+            //})
+            //alert( table.rows('.selected').data().length +' row(s) selected' );
+        } );
     } );
- 
-    $('#button').click( function () {
-      var data = table.$('.selected')  //.serialize();
-        alert(data)
-        alert( table.rows('.selected').data().length +' row(s) selected' );
-    } );
-} );
 </script>
 </body>
 </html>
