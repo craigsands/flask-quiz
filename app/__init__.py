@@ -5,15 +5,15 @@ from flask_bootstrap import Bootstrap
 from flask_login import current_user, LoginManager
 from flask_nav import Nav
 from flask_nav.elements import Navbar, Subgroup, View
-from flask_restful import Resource, Api
 from flask_sqlalchemy import SQLAlchemy
+from flask_restless import APIManager
 
 
-api = Api()
 bootstrap = Bootstrap()
 db = SQLAlchemy()
 login = LoginManager()
 login.login_view = 'auth.login'
+manager = APIManager(flask_sqlalchemy_db=db)
 nav = Nav()
 
 
@@ -72,10 +72,10 @@ def create_app(test_config=None):
             raise
 
     # initialize extensions
-    api.init_app(app)
     bootstrap.init_app(app)
     db.init_app(app)
     login.init_app(app)
+    manager.init_app(app)
     nav.init_app(app)
 
     # create the database
@@ -96,6 +96,13 @@ def create_app(test_config=None):
 
     from app.user import bp as user_bp
     app.register_blueprint(user_bp, url_prefix='/user')
+
+    # register api endpoints
+    from app.models import Quiz, Question, Subject, User
+    manager.create_api(Quiz, app=app)
+    manager.create_api(Question, app=app)
+    manager.create_api(Subject, app=app)
+    manager.create_api(User, app=app)
 
     return app
 
