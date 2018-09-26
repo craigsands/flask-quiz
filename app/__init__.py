@@ -98,9 +98,10 @@ def create_app(test_config=None):
     app.register_blueprint(user_bp, url_prefix='/user')
 
     # register api endpoints
-    from app.models import Quiz, Question, Subject, User
+    from app.models import Quiz, Question, Score, Subject, User
     manager.create_api(Quiz, app=app)
     manager.create_api(Question, app=app)
+    manager.create_api(Score, app=app)
     manager.create_api(Subject, app=app)
     manager.create_api(User, app=app)
 

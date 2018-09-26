@@ -14,6 +14,9 @@ class Question(db.Model):
     # Questions (children) are many to one subject (parent)
     subject = db.relationship("Subject", back_populates="questions")
 
+    # Proxy the 'name' attribute from the 'subject' relationship
+    subject_name = association_proxy('subject', 'name')
+
     # Quizzes (parents) are many to one question (child)
     quizzes = db.relationship("QuizQuestion", back_populates="question")
 
@@ -29,6 +32,9 @@ class Quiz(db.Model):
 
     # User (parent) is one to many quizzes (children)
     user = db.relationship("User", back_populates="quizzes")
+
+    # Proxy the 'username' attribute from the 'user' relationship
+    user_name = association_proxy('user', 'username')
 
     # Scores (children) are many to one quiz (parent)
     scores = db.relationship("Score", back_populates="quiz")
@@ -63,8 +69,14 @@ class Score(db.Model):
     # User (parent) is one to many scores (children)
     user = db.relationship("User", back_populates="scores")
 
+    # Proxy the 'username' attribute from the 'user' relationship
+    user_name = association_proxy('user', 'username')
+
     # Quiz (parent) is one to many scores (children)
     quiz = db.relationship("Quiz", back_populates="scores")
+
+    # Proxy the 'name' attribute from the 'quiz' relationship
+    quiz_name = association_proxy('quiz', 'name')
 
     def __repr__(self):
         return '<Score %r, User %r, Quiz %r>' % (
