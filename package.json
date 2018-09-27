@@ -1,0 +1,26 @@
+{
+  "name": "flask-quiz",
+  "version": "1.0.0",
+  "description": "A quiz generator and runner. Upload metrics from Excel to dynamically generate questions and answers. Data from each sheet is combined to build a question bank per Excel file.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/craigsands/flask-quiz.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/craigsands/flask-quiz/issues"
+  },
+  "homepage": "https://github.com/craigsands/flask-quiz#readme",
+  "devDependencies": {
+    "request": "^2.88.0"
+  }
+}

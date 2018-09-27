@@ -2,6 +2,7 @@ import errno
 import os
 from flask import Flask
 from flask_bootstrap import Bootstrap
+from flask_cors import CORS
 from flask_login import current_user, LoginManager
 from flask_nav import Nav
 from flask_nav.elements import Navbar, Subgroup, View
@@ -10,6 +11,7 @@ from flask_restless import APIManager
 
 
 bootstrap = Bootstrap()
+cors = CORS()
 db = SQLAlchemy()
 login = LoginManager()
 login.login_view = 'auth.login'
@@ -73,6 +75,7 @@ def create_app(test_config=None):
 
     # initialize extensions
     bootstrap.init_app(app)
+    cors.init_app(app, resources={r'/api/*': {'origins': '*'}})
     db.init_app(app)
     login.init_app(app)
     manager.init_app(app)
@@ -97,13 +100,26 @@ def create_app(test_config=None):
     from app.user import bp as user_bp
     app.register_blueprint(user_bp, url_prefix='/user')
 
+    # def add_cors_headers(response):
+    #     response.headers['Access-Control-Allow-Origin'] = '*'
+    #     response.headers['Access-Control-Allow-Credentials'] = 'true'
+    #     # Set whatever other headers you like...
+    #     return response
+
     # register api endpoints
     from app.models import Quiz, Question, Score, Subject, User
     manager.create_api(Quiz, app=app)
     manager.create_api(Question, app=app)
     manager.create_api(Score, app=app)
     manager.create_api(Subject, app=app)
-    manager.create_api(User, app=app)
+    manager.create_api(User, app=app, methods=['GET', 'POST'], primary_key='id')
+
+    # add CORS headers
+    def after_request(response):
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
+    app.after_request = after_request
 
     return app
 

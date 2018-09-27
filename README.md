@@ -39,6 +39,8 @@ Absent from the question bank are the following, as they do not include the 'key
 ## Install
 ```
 pip install -r requirements.txt
+npm init
+npm --save-dev requests
 ```
 
 ## Run
