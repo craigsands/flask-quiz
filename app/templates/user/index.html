@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block app_content %}
+    <h1>{{ title }}</h1>
+    {% if prev_url %}
+    <a href="{{ first_url }}">First</a>
+    <a href="{{ prev_url }}">Previous</a>
+    {% endif %}
+    {% if next_url %}
+    <a href="{{ next_url }}">Next</a>
+    <a href="{{ last_url }}">Last</a>
+    {% endif %}
+    {{ table }}
+{% endblock %}

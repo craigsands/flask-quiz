@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Debug DataTables</title>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+</head>
+<body>
+<div id="result"></div>
+<table id="example1">
+    <thead>
+    <tr>
+        <th>Prompt</th>
+        <th>Correct Answer</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<button id="down">Down</button>
+<button id="up">Up</button>
+<button id="update">Update</button>
+<table id="example2">
+    <thead>
+    <tr>
+        <th>Prompt</th>
+        <th>Correct Answer</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+<script
+        src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js">
+</script>
+<script type="text/javascript" charset="utf8">
+  $(document).ready( function () {
+    var table1 = $('#example1').DataTable( {
+      "ajax": {
+        "url": "/api/quiz/1",
+        "dataSrc": "questions",
+        "pagingType": "full_numbers"
+      },
+      "columns": [
+        { "data": "prompt" },
+        { "data": "correct_answer" }
+      ]
+    } );
+
+    var table2 = $('#example2').DataTable( {
+      "ajax": {
+        "url": "/api/question",
+        "data": {
+            "q": JSON.stringify({
+                "filters": [{
+                    "or": [
+                        {
+                            "name": "num_quizzes",
+                            "op": "eq",
+                            "val": 0
+                        }, {
+                            "name": "quizzes",
+                            "op": "any",
+                            "val": {
+                                "name": "id",
+                                "op": "neq",
+                                "val": 1
+                            }
+                        }
+                    ]
+                }]
+            })
+        },
+        "dataSrc": "objects",
+        "pagingType": "full_numbers"
+      },
+      "columns": [
+        { "data": "prompt" },
+        { "data": "correct_answer" }
+      ]
+    } );
+
+    $('#example1 tbody').on( 'click', 'tr', function () {
+        $(this).toggleClass('selected');
+    } );
+
+    $('#example2 tbody').on( 'click', 'tr', function () {
+        $(this).toggleClass('selected');
+    } );
+
+    $('#down').click( function () {
+        var rows = table1.rows( $('#example1 tbody tr.selected') );
+        table2.rows.add( rows.data() ).draw();
+        rows.remove();
+        table1.draw();
+    } );
+
+    $('#up').click( function () {
+        var rows = table2.rows( $('#example2 tbody tr.selected') );
+        table1.rows.add( rows.data() ).draw();
+        rows.remove();
+        table2.draw();
+    } );
+
+    $('#update').click(function() {
+        questions = table1.rows().data().toArray();
+        question_ids = questions.map(function(q) { return {"id": q.id} });
+        $.ajax({
+            type: "PATCH",
+            url: "/api/quiz/1",
+            data: JSON.stringify({
+                "questions": question_ids
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(data){alert("quiz 1 updated");},
+            failure: function(errMsg) {
+              alert(errMsg);
+            }
+        });
+    });
+  } );
+  </script>
+</body>
+</html>

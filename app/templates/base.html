@@ -1,16 +1,49 @@
 {% extends 'bootstrap/base.html' %}
 
+{% block html_attribs %} lang="en"{% endblock %}
+
 {% block title %}
-    {% if title %}{{ title }} - Quick Quizzes{% else %}{{ 'Welcome to Quick Quizzes!' }}{% endif %}
+    {% if title %}
+        {{ title }} - Quick Quizzes
+    {% else %}
+        {{ 'Welcome to Quick Quizzes!' }}
+    {% endif %}
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<style type="text/css">
+    div#content { margin: auto; max-width: 96% }
+</style>
+{% endblock %}
+
+{% block navbar %}
+    {{nav.main_nav.render()}}
 {% endblock %}
 
 {% block content %}
-    <a href="{{ url_for('main.index') }}">Home</a>
-    {% if not session.get('username') %}
-    <a href="{{ url_for('auth.login') }}">Login</a>
-    {% else %}
-    <a href="{{ url_for('auth.logout') }}">Logout</a>
-    <p>Hello {{ session.get('username') }}!</p>
-    {% endif %}
-    {% block app_content %}{% endblock %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <div id="content">
+        {% block app_content %}{% endblock %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+<script
+    src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js">
+</script>
 {% endblock %}

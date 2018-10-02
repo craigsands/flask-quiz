@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block app_content %}
+    <h1>{{ title }}</h1>
+    <div><a href="{{ url_for('question.upload') }}">Upload questions</a></div>
+
+    <button id="delete">Delete Selected</button>
+    <table id="questions" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Prompt</th>
+                <th>Correct Answer</th>
+                <th>Subject</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script type="text/javascript" charset="utf8">
+    $(document).ready( function () {
+        var table = $('#questions').DataTable( {
+            "ajax": {
+                "url": "/api/question",
+                "dataSrc": "objects",
+                "pagingType": "full_numbers"
+            },
+            "columns": [
+                { "data": "id" },
+                { "data": "prompt" },
+                { "data": "correct_answer" },
+                { "data": "subject_name" }
+            ]
+        } );
+
+        $('#questions tbody').on( 'click', 'tr', function () {
+            $(this).toggleClass('selected');
+        });
+
+        $('#delete').click(function() {
+            var selected = table.rows( $('#questions tbody tr.selected') );
+            question_ids = selected.data().toArray().map(function(q) { return q.id; });
+            selected.remove();
+
+            $.ajax({
+                type: "DELETE",
+                url: "/api/question?q=" +
+                    JSON.stringify({
+                        "filters": [
+                            {
+                                "name": "id",
+                                "op": "in",
+                                "val": question_ids
+                            }
+                        ]
+                    }),
+                dataType: "json",
+                success: function(data){
+                    alert(data['num_deleted'] + " questions deleted.");
+                },
+                failure: function(errMsg) {
+                    alert(errMsg);
+                }
+            });
+
+            table.draw();
+        });
+    } );
+</script>
+{% endblock %}
