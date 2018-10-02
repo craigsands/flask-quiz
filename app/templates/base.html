@@ -12,7 +12,13 @@
 
 {% block styles %}
 {{super()}}
-<!--<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">-->
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<style type="text/css">
+    div#content { margin: auto; max-width: 96% }
+</style>
 {% endblock %}
 
 {% block navbar %}
@@ -29,10 +35,15 @@
             </ul>
         {% endif %}
     {% endwith %}
-    {% block app_content %}{% endblock %}
+    <div id="content">
+        {% block app_content %}{% endblock %}
+    </div>
 {% endblock %}
 
 {% block scripts %}
-<!--<script src="..."></script>-->
 {{super()}}
+<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+<script
+    src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js">
+</script>
 {% endblock %}

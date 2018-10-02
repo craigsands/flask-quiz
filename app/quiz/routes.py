@@ -8,60 +8,43 @@ from flask_login import current_user, login_required
 from openpyxl import load_workbook
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import Question, Quiz, QuizQuestion, Subject
+from app.models import Question, Quiz, Subject
 from app.quiz import bp
 from app.quiz.forms import AnswerForm, UpdateQuizForm
-from app.tables import SortableQuestionTable, SortableQuizTable
 
 
 @bp.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    items_per_page = 10
-    sort = request.args.get('sort', 'id')
-    order = request.args.get('direction', 'asc')
-    reverse = (order == 'desc')
-    page = request.args.get('page', 1, type=int)
-    quizzes = Quiz.query.order_by(
-        getattr(getattr(Quiz, sort), order)()
-    ).paginate(page, items_per_page, False)
-    first_url = url_for('quiz.index', page=1) \
-        if quizzes.has_prev else None
-    prev_url = url_for('quiz.index', page=quizzes.prev_num) \
-        if quizzes.has_prev else None
-    next_url = url_for('quiz.index', page=quizzes.next_num) \
-        if quizzes.has_next else None
-    last_url = url_for('quiz.index', page=quizzes.pages) \
-        if quizzes.has_next else None
-    return render_template('quiz/index.html', title='Quizzes',
-                           table=SortableQuizTable(
-                               quizzes.items, sort_by=sort,
-                               sort_reverse=reverse),
-                           first_url=first_url, prev_url=prev_url,
-                           next_url=next_url, last_url=last_url)
+    return render_template('quiz/index.html', title='Quizzes')
 
 
 @bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
-    subjects = Subject.query.all()
+    return render_template('quiz/create.html', title='Create Quiz')
 
-    form = UpdateQuizForm()
-    form.subjects.choices = [(s.id, s.name) for s in subjects]
-    form.questions.choices = []
-
-    if form.validate_on_submit():
-        if request.method == "POST":
-            quiz = Quiz()
-            quiz.name = form.name.data
-            quiz.user_id = current_user.get_id()
-            quiz.subjects = form.subjects.data
-            quiz.timestamp = datetime.utcnow()
-            db.session.add(quiz)
-            db.session.commit()
-            return redirect(url_for('quiz.edit', quiz_id=quiz.id), 201)
-
-    return render_template('quiz/create.html', title='Create Quiz', form=form)
+# @bp.route('/create', methods=['GET', 'POST'])
+# @login_required
+# def create():
+#     subjects = Subject.query.all()
+#
+#     form = UpdateQuizForm()
+#     form.subjects.choices = [(s.id, s.name) for s in subjects]
+#     form.questions.choices = []
+#
+#     if form.validate_on_submit():
+#         if request.method == "POST":
+#             quiz = Quiz()
+#             quiz.name = form.name.data
+#             quiz.user_id = current_user.get_id()
+#             quiz.subjects = form.subjects.data
+#             quiz.timestamp = datetime.utcnow()
+#             db.session.add(quiz)
+#             db.session.commit()
+#             return redirect(url_for('quiz.edit', quiz_id=quiz.id), 201)
+#
+#     return render_template('quiz/create.html', title='Create Quiz', form=form)
 
 
 @bp.route('/<int:quiz_id>', methods=['GET', 'POST'])
@@ -78,30 +61,7 @@ def edit(quiz_id):
 
     if form.validate_on_submit():
         if request.method == "POST":
-            items_per_page = 10
-            sort = request.args.get('sort', 'id')
-            order = request.args.get('direction', 'asc')
-            reverse = (order == 'desc')
-            page = request.args.get('page', 1, type=int)
-            subject_ids = form.subjects.data
-            questions = Question.query.filter(
-                Question.subject_id.in_(subject_ids)).order_by(
-                getattr(getattr(Question, sort), order)()
-            ).paginate(page, items_per_page, False)
-            first_url = url_for('question.index', page=1) \
-                if questions.has_prev else None
-            prev_url = url_for('question.index', page=questions.prev_num) \
-                if questions.has_prev else None
-            next_url = url_for('question.index', page=questions.next_num) \
-                if questions.has_next else None
-            last_url = url_for('question.index', page=questions.pages) \
-                if questions.has_next else None
-            return render_template('quiz/create.html', title=quiz.name,
-                                   table=SortableQuestionTable(
-                                       questions.items, sort_by=sort,
-                                       sort_reverse=reverse),
-                                   first_url=first_url, prev_url=prev_url,
-                                   next_url=next_url, last_url=last_url)
+            return render_template('quiz/create.html', title=quiz.name)
 
     return render_template('quiz/edit.html', title='Edit Quiz', form=form,
                            quiz_name=quiz.name)

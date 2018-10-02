@@ -1,8 +1,41 @@
 from datetime import datetime
 from flask_login import UserMixin
+from sqlalchemy import func, select
+from sqlalchemy.orm import column_property
 from sqlalchemy.ext.associationproxy import association_proxy
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
+
+
+quiz_question_association_table = db.Table(
+    'association', db.Model.metadata,
+    db.Column('quiz_id', db.Integer, db.ForeignKey('quiz.id')),
+    db.Column('question_id', db.Integer, db.ForeignKey('question.id'))
+)
+
+
+class Quiz(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Unicode, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # User (parent) is one to many quizzes (children)
+    user = db.relationship("User", back_populates="quizzes")
+
+    # Proxy the 'username' attribute from the 'user' relationship
+    user_name = association_proxy('user', 'username')
+
+    # Scores (children) are many to one quiz (parent)
+    scores = db.relationship("Score", back_populates="quiz", lazy='dynamic')
+
+    # Questions (children) are many to many quizzes (parents)
+    questions = db.relationship("Question",
+                                secondary=quiz_question_association_table,
+                                back_populates="quizzes", lazy='dynamic')
+
+    def __repr__(self):
+        return '<Quiz %r>' % self.name
 
 
 class Question(db.Model):
@@ -17,46 +50,19 @@ class Question(db.Model):
     # Proxy the 'name' attribute from the 'subject' relationship
     subject_name = association_proxy('subject', 'name')
 
-    # Quizzes (parents) are many to one question (child)
-    quizzes = db.relationship("QuizQuestion", back_populates="question")
+    # Quizzes (parents) are many to many questions (children)
+    quizzes = db.relationship("Quiz",
+                              secondary=quiz_question_association_table,
+                              back_populates="questions", lazy='dynamic')
+
+    num_quizzes = column_property(
+        select([func.count(Quiz.id)]).
+                where(quiz_question_association_table.c.question_id == id).
+                correlate_except(Quiz)
+    )
 
     def __repr__(self):
         return '<Question %r>' % self.id
-
-
-class Quiz(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Unicode, index=True, unique=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # User (parent) is one to many quizzes (children)
-    user = db.relationship("User", back_populates="quizzes")
-
-    # Proxy the 'username' attribute from the 'user' relationship
-    user_name = association_proxy('user', 'username')
-
-    # Scores (children) are many to one quiz (parent)
-    scores = db.relationship("Score", back_populates="quiz")
-
-    # Questions (children) are many to one quiz (parent)
-    questions = db.relationship("QuizQuestion", back_populates="quiz")
-
-    def __repr__(self):
-        return '<Quiz %r>' % self.name
-
-
-class QuizQuestion(db.Model):
-    __tablename__ = 'quiz_question'
-    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), primary_key=True)
-    question_id = db.Column(db.Integer, db.ForeignKey('question.id'),
-                            primary_key=True)
-
-    # Quiz (parent) is one to many questions (children)
-    quiz = db.relationship("Quiz", back_populates="questions")
-
-    # Question (child) is one to many quizzes (parents)
-    question = db.relationship("Question", back_populates="quizzes")
 
 
 class Score(db.Model):
@@ -85,10 +91,11 @@ class Score(db.Model):
 
 class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Unicode, index=True, unique=True)
+    name = db.Column(db.Unicode, unique=True)
 
     # Questions (children) are many to one subject (parent)
-    questions = db.relationship("Question", back_populates="subject")
+    questions = db.relationship("Question", back_populates="subject",
+                                lazy='dynamic')
 
     def __repr__(self):
         return '<Subject %r>' % self.name
@@ -96,15 +103,15 @@ class Subject(db.Model):
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Unicode, index=True, unique=True)
+    username = db.Column(db.Unicode, unique=True)
     pw_hash = db.Column(db.Unicode)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Quizzes (children) are many to one user (parent)
-    quizzes = db.relationship("Quiz", back_populates="user")
+    quizzes = db.relationship("Quiz", back_populates="user", lazy='dynamic')
 
     # Scores (children) are many to one user (parent)
-    scores = db.relationship("Score", back_populates="user")
+    scores = db.relationship("Score", back_populates="user", lazy='dynamic')
 
     def __repr__(self):
         return '<User %r>' % self.username

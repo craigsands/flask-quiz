@@ -1,4 +1,4 @@
-from flask import redirect, url_for
+from flask import redirect, render_template, url_for
 from flask_login import current_user
 from app.main import bp
 
@@ -10,3 +10,8 @@ def index():
         return redirect(url_for('user.get_info',
                                 username=current_user.username))
     return redirect(url_for('auth.login'))
+
+
+@bp.route('/js')
+def test_js():
+    return render_template('js.html')

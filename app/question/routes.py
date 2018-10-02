@@ -9,34 +9,12 @@ from app import db
 from app.models import Question, Subject
 from app.question import bp
 from app.question.forms import UploadQuizForm
-from app.tables import SortableQuestionTable
 
 
 @bp.route('/')
 @login_required
 def index():
-    items_per_page = 10
-    sort = request.args.get('sort', 'id')
-    order = request.args.get('direction', 'asc')
-    reverse = (order == 'desc')
-    page = request.args.get('page', 1, type=int)
-    questions = Question.query.order_by(
-        getattr(getattr(Question, sort), order)()
-    ).paginate(page, items_per_page, False)
-    first_url = url_for('question.index', page=1) \
-        if questions.has_prev else None
-    prev_url = url_for('question.index', page=questions.prev_num) \
-        if questions.has_prev else None
-    next_url = url_for('question.index', page=questions.next_num) \
-        if questions.has_next else None
-    last_url = url_for('question.index', page=questions.pages) \
-        if questions.has_next else None
-    return render_template('question/index.html', title='Questions',
-                           table=SortableQuestionTable(
-                               questions.items, sort_by=sort,
-                               sort_reverse=reverse),
-                           first_url=first_url, prev_url=prev_url,
-                           next_url=next_url, last_url=last_url)
+    return render_template('question/index.html', title='Questions')
 
 
 @bp.route('/upload', methods=['GET', 'POST'])

@@ -2,14 +2,101 @@
 
 {% block app_content %}
     <h1>{{ title }}</h1>
-    <div><a href="{{ url_for('quiz.create') }}">New Quiz</a></div>
-    {% if prev_url %}
-    <a href="{{ first_url }}">First</a>
-    <a href="{{ prev_url }}">Previous</a>
-    {% endif %}
-    {% if next_url %}
-    <a href="{{ next_url }}">Next</a>
-    <a href="{{ last_url }}">Last</a>
-    {% endif %}
-    {{ table }}
+
+    <button id="create">New Quiz</button>
+    <button id="delete">Delete Selected</button>
+    <table id="quizzes" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Creator</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script type="text/javascript" charset="utf8">
+    $(document).ready( function () {
+        var table = $('#quizzes').DataTable( {
+            "ajax": {
+                "url": "/api/quiz",
+                "dataSrc": "objects",
+                "pagingType": "full_numbers"
+            },
+            "columns": [
+                { "data": "id" },
+                { "data": "name" },
+                { "data": "user_name" },
+                { "data": "timestamp" }
+            ]
+        } );
+
+        $('#quizzes tbody').on( 'click', 'tr', function () {
+            $(this).toggleClass('selected');
+        } );
+
+        $('#create').click(function() {
+            var selected = table.rows( $('#quizzes tbody tr.selected') );
+            quiz_ids = selected.data().toArray().map(function(q) { return q.id; });
+            selected.remove();
+
+            $.ajax({
+                type: "DELETE",
+                url: "/api/quiz?q=" +
+                    JSON.stringify({
+                        "filters": [
+                            {
+                                "name": "id",
+                                "op": "in",
+                                "val": quiz_ids
+                            }
+                        ]
+                    }),
+                dataType: "json",
+                success: function(data){
+                    alert(data['num_deleted'] + " quizzes deleted.");
+                },
+                failure: function(errMsg) {
+                    alert(errMsg);
+                }
+            });
+
+            table.draw();
+        });
+
+        $('#delete').click(function() {
+            var selected = table.rows( $('#quizzes tbody tr.selected') );
+            quiz_ids = selected.data().toArray().map(function(q) { return q.id; });
+            selected.remove();
+
+            $.ajax({
+                type: "DELETE",
+                url: "/api/quiz?q=" +
+                    JSON.stringify({
+                        "filters": [
+                            {
+                                "name": "id",
+                                "op": "in",
+                                "val": quiz_ids
+                            }
+                        ]
+                    }),
+                dataType: "json",
+                success: function(data){
+                    alert(data['num_deleted'] + " quizzes deleted.");
+                },
+                failure: function(errMsg) {
+                    alert(errMsg);
+                }
+            });
+
+            table.draw();
+        });
+    } );
+</script>
 {% endblock %}

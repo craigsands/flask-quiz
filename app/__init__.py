@@ -2,7 +2,6 @@ import errno
 import os
 from flask import Flask
 from flask_bootstrap import Bootstrap
-from flask_cors import CORS
 from flask_login import current_user, LoginManager
 from flask_nav import Nav
 from flask_nav.elements import Navbar, Subgroup, View
@@ -11,7 +10,6 @@ from flask_restless import APIManager
 
 
 bootstrap = Bootstrap()
-cors = CORS()
 db = SQLAlchemy()
 login = LoginManager()
 login.login_view = 'auth.login'
@@ -50,7 +48,7 @@ def create_app(test_config=None):
 
     # update config with environment variables or defaults
     app.config.from_mapping(
-        SECRET_KEY=os.environ.get('SECRET_KEY', '^Ik7Jrzyi9#MA8ng'),
+        SECRET_KEY=os.environ.get('SECRET_KEY', os.urandom(24)),
         SQLALCHEMY_DATABASE_URI=os.environ.get(
             'DATABASE_URI',
             'sqlite:///' + os.path.join(app.instance_path, 'db.sqllite')
@@ -75,7 +73,6 @@ def create_app(test_config=None):
 
     # initialize extensions
     bootstrap.init_app(app)
-    cors.init_app(app, resources={r'/api/*': {'origins': '*'}})
     db.init_app(app)
     login.init_app(app)
     manager.init_app(app)
@@ -100,26 +97,41 @@ def create_app(test_config=None):
     from app.user import bp as user_bp
     app.register_blueprint(user_bp, url_prefix='/user')
 
-    # def add_cors_headers(response):
-    #     response.headers['Access-Control-Allow-Origin'] = '*'
-    #     response.headers['Access-Control-Allow-Credentials'] = 'true'
-    #     # Set whatever other headers you like...
-    #     return response
+    # Create authentication wrapper for API requests
+    def auth_func(*args, **kwargs):
+        #if not current_user.is_authenticated():
+        #    raise ProcessingException(description='Not authenticated!',
+        #                             code=401)
+        return True
 
     # register api endpoints
     from app.models import Quiz, Question, Score, Subject, User
-    manager.create_api(Quiz, app=app)
-    manager.create_api(Question, app=app)
-    manager.create_api(Score, app=app)
-    manager.create_api(Subject, app=app)
-    manager.create_api(User, app=app, methods=['GET', 'POST'], primary_key='id')
 
-    # add CORS headers
-    def after_request(response):
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-        return response
-    app.after_request = after_request
+    # Require app_context() or specify primary key for each table.
+    # Otherwise, create_api() checks the database for the primary key before
+    # the app context.
+    with app.app_context():
+        manager.create_api(Quiz, app=app, methods=['GET', 'PATCH', 'POST',
+                                                   'DELETE'],
+                           allow_delete_many=True, results_per_page=0)
+        manager.create_api(Question, app=app,
+                           methods=['GET', 'POST', 'DELETE'],
+                           allow_delete_many=True, results_per_page=0)
+        manager.create_api(Score, app=app)
+        manager.create_api(Subject, app=app)
+
+        # TODO: Only modify self, unless admin
+        # https://flask-restless.readthedocs.io/en/stable/customizing.html#universal-preprocessors-and-postprocessors
+        manager.create_api(User, app=app, methods=['GET', 'POST'],
+                           preprocessors=dict(POST=[auth_func],
+                                              GET_MANY=[auth_func],
+                                              PATCH_SINGLE=[auth_func],
+                                              PATCH_MANY=[auth_func],
+                                              PUT_SINGLE=[auth_func],
+                                              PUT_MANY=[auth_func],
+                                              DELETE_SINGLE=[auth_func],
+                                              DELETE_MANY=[auth_func]),
+                           primary_key='username')
 
     return app
 
