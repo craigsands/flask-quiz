@@ -2,26 +2,85 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h1>Quiz - {{ quiz_title }}</h1>
+    <h1>Quiz {{ quiz_id }}</h1>
     <div class="row">
-        <div class="col-md-4">
-            <div>Question {{ question_num }} of {{ num_questions }}</div>
-            <div>Section: {{ section }}</div>
-            <div>
-                Given the {{ known_key }}
-                is {{ known_value }},
-                what is the {{ unknown_key }}?
-            </div>
-        </div>
-        <div class="col-md-4">
+        <div class="col">
+            <div id="subject"></div>
+            <div id="question_num"></div>
+            <div id="prompt"></div>
             {{ wtf.quick_form(form) }}
         </div>
     </div>
+
+    <div id="surveyElement"></div>
+    <div id="surveyResult"></div>
 {% endblock %}
 
 {% block scripts %}
-{{super()}}
-<script type="text/javascript" charset="utf8">
+    {{ super() }}
+    <!-- SurveyJS -->
+    <script src="https://surveyjs.azureedge.net/1.0.49/survey.jquery.min.js"></script>
+
+    <script type="text/javascript" charset="utf8">
+        $(document).ready( function () {
+            Survey.StylesManager.applyTheme("bootstrap");
+            Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+            window.survey = new Survey.Model();
+
+            var quiz_id = {{ quiz_id }};
+
+            $.get({
+                url: "/api/quiz/" + quiz_id,
+                contentType: "application/json; charset=utf-8",
+                success: function(data){
+                    var page = survey.addNewPage("page1");
+
+                    data["questions"].forEach( function( question ) {
+                        var q = page.addNewQuestion(
+                            "text", "question_" + question["id"]);
+                        q.title = question["prompt"];
+                        q.placeHolder = "Jon Snow";
+                    });
+                },
+                failure: function(errMsg) {
+                    alert(errMsg);
+                }
+            } );
+
+            survey
+                .onComplete
+                .add(function (result) {
+                    document
+                        .querySelector('#surveyResult')
+                        .innerHTML = "result: " + JSON.stringify(result.data);
+                });
+
+            $("#surveyElement").Survey({model: survey});
+
+        } );
+    </script>
+{% endblock scripts %}
+
+
+
+<!--<script type="text/javascript" charset="utf8">
+    $(document).ready( function () {
+        var quiz = {};
+        var quiz_id = {{ quiz_id }};
+
+        $.get({
+            url: "/api/quiz/" + quiz_id,
+            contentType: "application/json; charset=utf-8",
+            success: function(data){
+                var quiz = data;
+                location.href = "/quiz/edit/" + data["id"];
+            },
+            failure: function(errMsg) {
+                alert(errMsg);
+            }
+        } );
+    } );
+
     $(document).ready( function () {
         var table_selector = '#quizzes';
 
@@ -97,5 +156,4 @@
             } );
         } );
     } );
-</script>
-{% endblock %}
+</script>-->

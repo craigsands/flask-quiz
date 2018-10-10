@@ -41,7 +41,7 @@
                 {
                     data: null,
                     className: "center",
-                    defaultContent: '<a href="" class="edit_quiz">Edit</a> / <a href="" class="remove_quiz">Delete</a>'
+                    defaultContent: '<a href="" class="take_quiz">Take</a> / <a href="" class="edit_quiz">Edit</a> / <a href="" class="remove_quiz">Delete</a>'
                 }
             ]
         } );
@@ -61,6 +61,16 @@
                     alert(errMsg);
                 }
             } );
+        } );
+
+        // Take Quiz
+        $(table_selector).on('click', 'a.take_quiz', function (e) {
+            e.preventDefault();  // don't follow link
+
+            var row_data = table.row($(this).closest('tr')).data();
+            var quiz_id = row_data['id'];
+
+            location.href = "/quiz/" + quiz_id;
         } );
 
         // Edit a record

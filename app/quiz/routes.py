@@ -40,9 +40,9 @@ def edit(quiz_id):
 #
 @bp.route('/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
-def start(quiz_id):
-    return render_template('quiz/question.html', title='Quiz %s' % quiz_id,
-                           quiz_id=quiz_id)
+def run(quiz_id):
+    form = AnswerForm()
+    return render_template('quiz/question.html', form=form, quiz_id=quiz_id)
 
 #     # quiz = Quiz().load_from_excel(
 #     #     os.path.join(current_app.instance_path, 'quiz', '%s.xlsx' % quiz_title)
