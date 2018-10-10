@@ -2,10 +2,164 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h1>Edit Quiz</h1>
     <div class="row">
-        <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
+        <h1>Edit Quiz</h1>
+
+        <label for="quiz_name">Name:</label>
+        <input type="text" id="quiz_name" name="quiz_name" />
+
+        <button id="save">Save</button>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <table id="quiz_questions" class="display" style="width:100%">
+                <thead>
+                <tr>
+                    <th>Prompt</th>
+                    <th>Correct Answer</th>
+                    <th>Subject</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="col">
+            <button id="down">Down</button>
+            <button id="up">Up</button>
+        </div>
+
+        <div class="col">
+            <table id="question_bank" class="display" style="width:100%">
+                <thead>
+                <tr>
+                    <th>Prompt</th>
+                    <th>Correct Answer</th>
+                    <th>Subject</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
-{% endblock %}
+{% endblock app_content%}
+
+{% block scripts %}
+{{super()}}
+<script type="text/javascript" charset="utf8">
+  $(document).ready( function () {
+    var quiz_id = {{ quiz_id }};
+    var quiz_name_selector = '#quiz_name';
+    var quiz_question_selector = '#quiz_questions';
+    var question_bank_selector = '#question_bank';
+
+    $.get("/api/quiz/" + quiz_id, function(data, status){
+        $(quiz_name_selector).val(data['name']);
+    });
+
+    var quiz_questions_table = $(quiz_question_selector).DataTable( {
+        "ajax": {
+            "url": "/api/question",
+            "data": {
+                "q": JSON.stringify({
+                    "filters": [{
+                        "name": "quizzes",
+                        "op": "any",
+                        "val": {
+                            "name": "id",
+                            "op": "eq",
+                            "val": quiz_id
+                        }
+                    }]
+                })
+            },
+            "dataSrc": "objects",
+            "pagingType": "full_numbers"
+        },
+        "columns": [
+            { "data": "prompt" },
+            { "data": "correct_answer" },
+            { "data": "subject_name" }
+        ]
+    } );
+
+    var question_bank_table = $(question_bank_selector).DataTable( {
+        "ajax": {
+            "url": "/api/question",
+            "data": {
+                "q": JSON.stringify({
+                    "filters": [{
+                        "or": [
+                            {
+                                "name": "num_quizzes",
+                                "op": "eq",
+                                "val": 0
+                            }, {
+                                "name": "quizzes",
+                                "op": "any",
+                                "val": {
+                                    "name": "id",
+                                    "op": "neq",
+                                    "val": quiz_id
+                                }
+                            }
+                        ]
+                    }]
+                })
+            },
+            "dataSrc": "objects",
+            "pagingType": "full_numbers"
+        },
+        "columns": [
+            { "data": "prompt" },
+            { "data": "correct_answer" },
+            { "data": "subject_name" }
+        ]
+    } );
+
+    $(quiz_question_selector + ' tbody').on( 'click', 'tr', function () {
+        $(this).toggleClass('selected');
+    } );
+
+    $(question_bank_selector + ' tbody').on( 'click', 'tr', function () {
+        $(this).toggleClass('selected');
+    } );
+
+    $('#down').click( function () {
+        var rows = quiz_questions_table.rows( $(quiz_question_selector + ' tbody tr.selected') );
+        question_bank_table.rows.add( rows.data() ).draw();
+        rows.remove();
+        quiz_questions_table.draw();
+    } );
+
+    $('#up').click( function () {
+        var rows = question_bank_table.rows( $(question_bank_selector + ' tbody tr.selected') );
+        quiz_questions_table.rows.add( rows.data() ).draw();
+        rows.remove();
+        question_bank_table.draw();
+    } );
+
+    $('#save').click(function() {
+        var quiz_name = $(quiz_name_selector).val();
+        var questions = quiz_questions_table.rows().data().toArray();
+        var question_ids = questions.map(function(q) { return {"id": q.id} });
+
+        $.ajax({
+            type: "PATCH",
+            url: "/api/quiz/" + quiz_id,
+            data: JSON.stringify({
+                "name": quiz_name,
+                "questions": question_ids
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(data){alert("Quiz " + quiz_name + " updated");},
+            failure: function(errMsg) {
+                alert(errMsg);
+            }
+        });
+    });
+  } );
+  </script>
+{% endblock scripts %}

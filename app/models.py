@@ -1,5 +1,6 @@
+import uuid
 from datetime import datetime
-from flask_login import UserMixin
+from flask_login import current_user, UserMixin
 from sqlalchemy import func, select
 from sqlalchemy.orm import column_property
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -16,9 +17,11 @@ quiz_question_association_table = db.Table(
 
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Unicode, unique=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    name = db.Column(db.Unicode, index=True, unique=True,
+                     default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+                        default=lambda: current_user.id)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
     # User (parent) is one to many quizzes (children)
     user = db.relationship("User", back_populates="quizzes")
@@ -55,14 +58,22 @@ class Question(db.Model):
                               secondary=quiz_question_association_table,
                               back_populates="questions", lazy='dynamic')
 
-    num_quizzes = column_property(
-        select([func.count(Quiz.id)]).
-                where(quiz_question_association_table.c.question_id == id).
-                correlate_except(Quiz)
-    )
-
     def __repr__(self):
         return '<Question %r>' % self.id
+
+
+Quiz.num_questions = column_property(
+    select([func.count(quiz_question_association_table.c.question_id)]).
+            where(quiz_question_association_table.c.quiz_id == Quiz.id).
+            correlate_except(quiz_question_association_table)
+)
+
+
+Question.num_quizzes = column_property(
+    select([func.count(quiz_question_association_table.c.quiz_id)]).
+            where(quiz_question_association_table.c.question_id == Question.id).
+            correlate_except(quiz_question_association_table)
+)
 
 
 class Score(db.Model):
@@ -70,7 +81,7 @@ class Score(db.Model):
     score = db.Column(db.Float)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
     # User (parent) is one to many scores (children)
     user = db.relationship("User", back_populates="scores")
@@ -91,7 +102,7 @@ class Score(db.Model):
 
 class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Unicode, unique=True)
+    name = db.Column(db.Unicode, index=True, unique=True)
 
     # Questions (children) are many to one subject (parent)
     questions = db.relationship("Question", back_populates="subject",
@@ -103,9 +114,9 @@ class Subject(db.Model):
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Unicode, unique=True)
+    username = db.Column(db.Unicode, index=True, unique=True)
     pw_hash = db.Column(db.Unicode)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
     # Quizzes (children) are many to one user (parent)
     quizzes = db.relationship("Quiz", back_populates="user", lazy='dynamic')

@@ -13,62 +13,21 @@ from app.quiz import bp
 from app.quiz.forms import AnswerForm, UpdateQuizForm
 
 
-@bp.route('/', methods=['GET', 'POST'])
+@bp.route('/')
 @login_required
 def index():
     return render_template('quiz/index.html', title='Quizzes')
 
 
-@bp.route('/create', methods=['GET', 'POST'])
-@login_required
-def create():
-    return render_template('quiz/create.html', title='Create Quiz')
-
-# @bp.route('/create', methods=['GET', 'POST'])
-# @login_required
-# def create():
-#     subjects = Subject.query.all()
-#
-#     form = UpdateQuizForm()
-#     form.subjects.choices = [(s.id, s.name) for s in subjects]
-#     form.questions.choices = []
-#
-#     if form.validate_on_submit():
-#         if request.method == "POST":
-#             quiz = Quiz()
-#             quiz.name = form.name.data
-#             quiz.user_id = current_user.get_id()
-#             quiz.subjects = form.subjects.data
-#             quiz.timestamp = datetime.utcnow()
-#             db.session.add(quiz)
-#             db.session.commit()
-#             return redirect(url_for('quiz.edit', quiz_id=quiz.id), 201)
-#
-#     return render_template('quiz/create.html', title='Create Quiz', form=form)
-
-
-@bp.route('/<int:quiz_id>', methods=['GET', 'POST'])
+@bp.route('/edit/<int:quiz_id>')
 @login_required
 def edit(quiz_id):
-    quiz = Quiz.query.filter_by(id=quiz_id).first()
-    subjects = Subject.query.all()
-
-    form = UpdateQuizForm()
-    form.name = quiz.name
-    # TODO: HOW DO I GET quiz.subjects HERE???
-    form.subjects.data = [s.id for s in quiz.subjects]
-    form.subjects.choices = [(s.id, s.name) for s in subjects]
-
-    if form.validate_on_submit():
-        if request.method == "POST":
-            return render_template('quiz/create.html', title=quiz.name)
-
-    return render_template('quiz/edit.html', title='Edit Quiz', form=form,
-                           quiz_name=quiz.name)
+    return render_template('quiz/edit.html', title='Edit Quiz',
+                           quiz_id=quiz_id)
 
 
 # @bp.route('/<quiz_name>', methods=['GET', 'POST'])
-# @login_required
+# # @login_required
 # def start(quiz_name):
 #     session['points'] = 0
 #     session['total_points'] = 0
@@ -79,10 +38,12 @@ def edit(quiz_id):
 #                             question_id=0))
 #
 #
-# @bp.route('/<quiz_title>/<int:question_id>', methods=['GET', 'POST'])
-# @login_required
-# def get_question(quiz_title, question_id):
-#     pass
+@bp.route('/<int:quiz_id>', methods=['GET', 'POST'])
+@login_required
+def start(quiz_id):
+    return render_template('quiz/question.html', title='Quiz %s' % quiz_id,
+                           quiz_id=quiz_id)
+
 #     # quiz = Quiz().load_from_excel(
 #     #     os.path.join(current_app.instance_path, 'quiz', '%s.xlsx' % quiz_title)
 #     # )

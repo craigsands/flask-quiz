@@ -4,14 +4,16 @@
     <h1>{{ title }}</h1>
 
     <button id="create">New Quiz</button>
-    <button id="delete">Delete Selected</button>
+
     <table id="quizzes" class="display" style="width:100%">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Name</th>
                 <th>Creator</th>
+                <th>Questions</th>
                 <th>Created</th>
+                <th>Options</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -22,7 +24,9 @@
 {{super()}}
 <script type="text/javascript" charset="utf8">
     $(document).ready( function () {
-        var table = $('#quizzes').DataTable( {
+        var table_selector = '#quizzes';
+
+        var table = $(table_selector).DataTable( {
             "ajax": {
                 "url": "/api/quiz",
                 "dataSrc": "objects",
@@ -32,71 +36,67 @@
                 { "data": "id" },
                 { "data": "name" },
                 { "data": "user_name" },
-                { "data": "timestamp" }
+                { "data": "num_questions" },
+                { "data": "timestamp" },
+                {
+                    data: null,
+                    className: "center",
+                    defaultContent: '<a href="" class="edit_quiz">Edit</a> / <a href="" class="remove_quiz">Delete</a>'
+                }
             ]
         } );
 
-        $('#quizzes tbody').on( 'click', 'tr', function () {
-            $(this).toggleClass('selected');
+        $('#create').click(function() {
+            $.ajax({
+                type: "POST",
+                url: "/api/quiz",
+                data: JSON.stringify({}),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function(data){
+                    alert("Quiz created.");
+                    location.href = "/quiz/edit/" + data["id"];
+                },
+                failure: function(errMsg) {
+                    alert(errMsg);
+                }
+            } );
         } );
 
-        $('#create').click(function() {
-            var selected = table.rows( $('#quizzes tbody tr.selected') );
-            quiz_ids = selected.data().toArray().map(function(q) { return q.id; });
-            selected.remove();
+        // Edit a record
+        $(table_selector).on('click', 'a.edit_quiz', function (e) {
+            e.preventDefault();  // don't follow link
+
+            var row_data = table.row($(this).closest('tr')).data();
+            var quiz_id = row_data['id'];
+
+            location.href = "/quiz/edit/" + quiz_id;
+        } );
+
+        // Delete a record
+        $(table_selector).on('click', 'a.remove_quiz', function (e) {
+            e.preventDefault();  // don't follow link
+
+            var row = table.row($(this).closest('tr'));
+            var row_data = row.data();
+            var quiz_id = row_data['id'];
+            var quiz_name = row_data['name'];
 
             $.ajax({
                 type: "DELETE",
-                url: "/api/quiz?q=" +
-                    JSON.stringify({
-                        "filters": [
-                            {
-                                "name": "id",
-                                "op": "in",
-                                "val": quiz_ids
-                            }
-                        ]
-                    }),
-                dataType: "json",
+                url: "/api/quiz/" + quiz_id,
+                data: JSON.stringify({}),
+                contentType: "application/json; charset=utf-8",
                 success: function(data){
-                    alert(data['num_deleted'] + " quizzes deleted.");
+                    alert("Quiz " + quiz_name + " deleted.");
+                    row.remove();
+                    row.draw();
                 },
                 failure: function(errMsg) {
                     alert(errMsg);
                 }
-            });
-
-            table.draw();
-        });
-
-        $('#delete').click(function() {
-            var selected = table.rows( $('#quizzes tbody tr.selected') );
-            quiz_ids = selected.data().toArray().map(function(q) { return q.id; });
-            selected.remove();
-
-            $.ajax({
-                type: "DELETE",
-                url: "/api/quiz?q=" +
-                    JSON.stringify({
-                        "filters": [
-                            {
-                                "name": "id",
-                                "op": "in",
-                                "val": quiz_ids
-                            }
-                        ]
-                    }),
-                dataType: "json",
-                success: function(data){
-                    alert(data['num_deleted'] + " quizzes deleted.");
-                },
-                failure: function(errMsg) {
-                    alert(errMsg);
-                }
-            });
-
-            table.draw();
-        });
+            } );
+        } );
     } );
 </script>
 {% endblock %}

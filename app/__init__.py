@@ -26,7 +26,7 @@ def main_nav():
             Subgroup(
                 'Quizzes',
                 View('Manage', 'quiz.index'),
-                View('Create Quiz', 'quiz.create')
+                #View('Create Quiz', 'quiz.create')
             ),
             Subgroup(
                 'Questions',
@@ -113,7 +113,7 @@ def create_app(test_config=None):
     with app.app_context():
         manager.create_api(Quiz, app=app, methods=['GET', 'PATCH', 'POST',
                                                    'DELETE'],
-                           allow_delete_many=True, results_per_page=0)
+                           results_per_page=0)
         manager.create_api(Question, app=app,
                            methods=['GET', 'POST', 'DELETE'],
                            allow_delete_many=True, results_per_page=0)

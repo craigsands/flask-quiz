@@ -18,3 +18,84 @@
         </div>
     </div>
 {% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script type="text/javascript" charset="utf8">
+    $(document).ready( function () {
+        var table_selector = '#quizzes';
+
+        var table = $(table_selector).DataTable( {
+            "ajax": {
+                "url": "/api/quiz",
+                "dataSrc": "objects",
+                "pagingType": "full_numbers"
+            },
+            "columns": [
+                { "data": "id" },
+                { "data": "name" },
+                { "data": "user_name" },
+                { "data": "num_questions" },
+                { "data": "timestamp" },
+                {
+                    data: null,
+                    className: "center",
+                    defaultContent: '<a href="" class="edit_quiz">Edit</a> / <a href="" class="remove_quiz">Delete</a>'
+                }
+            ]
+        } );
+
+        $('#create').click(function() {
+            $.ajax({
+                type: "POST",
+                url: "/api/quiz",
+                data: JSON.stringify({}),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function(data){
+                    alert("Quiz created.");
+                    location.href = "/quiz/edit/" + data["id"];
+                },
+                failure: function(errMsg) {
+                    alert(errMsg);
+                }
+            } );
+        } );
+
+        // Edit a record
+        $(table_selector).on('click', 'a.edit_quiz', function (e) {
+            e.preventDefault();  // don't follow link
+
+            var row_data = table.row($(this).closest('tr')).data();
+            var quiz_id = row_data['id'];
+
+            location.href = "/quiz/edit/" + quiz_id;
+        } );
+
+        // Delete a record
+        $(table_selector).on('click', 'a.remove_quiz', function (e) {
+            e.preventDefault();  // don't follow link
+
+            var row = table.row($(this).closest('tr'));
+            var row_data = row.data();
+            var quiz_id = row_data['id'];
+            var quiz_name = row_data['name'];
+
+            $.ajax({
+                type: "DELETE",
+                url: "/api/quiz/" + quiz_id,
+                data: JSON.stringify({}),
+                contentType: "application/json; charset=utf-8",
+                success: function(data){
+                    alert("Quiz " + quiz_name + " deleted.");
+                    row.remove();
+                    row.draw();
+                },
+                failure: function(errMsg) {
+                    alert(errMsg);
+                }
+            } );
+        } );
+    } );
+</script>
+{% endblock %}

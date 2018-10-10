@@ -3,29 +3,26 @@
 {% block html_attribs %} lang="en"{% endblock %}
 
 {% block title %}
-    {% if title %}
+    {%- if title -%}
         {{ title }} - Quick Quizzes
-    {% else %}
+    {%- else -%}
         {{ 'Welcome to Quick Quizzes!' }}
-    {% endif %}
+    {%- endif -%}
 {% endblock %}
 
 {% block styles %}
-{{super()}}
-<link
-    rel="stylesheet"
-    type="text/css"
-    href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
-<style type="text/css">
-    div#content { margin: auto; max-width: 96% }
-</style>
+    {{ super() }}
+
+    <!-- Datatables -->
+    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css" rel="stylesheet">
 {% endblock %}
 
 {% block navbar %}
     {{nav.main_nav.render()}}
-{% endblock %}
+{% endblock navbar %}
 
 {% block content %}
+    <div class="container-fluid">
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul class=flashes>
@@ -35,15 +32,14 @@
             </ul>
         {% endif %}
     {% endwith %}
-    <div id="content">
-        {% block app_content %}{% endblock %}
     </div>
-{% endblock %}
+
+    <div class="container-fluid">
+        {% block app_content %}{% endblock app_content %}
+    </div>
+{% endblock content %}
 
 {% block scripts %}
-{{super()}}
-<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-<script
-    src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js">
-</script>
-{% endblock %}
+    {{ super() }}
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+{% endblock scripts %}
