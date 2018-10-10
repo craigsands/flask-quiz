@@ -3,14 +3,6 @@
 
 {% block app_content %}
     <h1>Quiz {{ quiz_id }}</h1>
-    <div class="row">
-        <div class="col">
-            <div id="subject"></div>
-            <div id="question_num"></div>
-            <div id="prompt"></div>
-            {{ wtf.quick_form(form) }}
-        </div>
-    </div>
 
     <div id="surveyElement"></div>
     <div id="surveyResult"></div>
