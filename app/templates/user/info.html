@@ -1,6 +1,39 @@
 {% extends 'base.html' %}
 
 {% block app_content %}
-    <h1>User Statistics</h1>
+    <h1>{{ title }}</h1>
     <div>Hello {{ user.username }}!</div>
+
+    <table id="scores" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Score</th>
+                <th>Quiz</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script type="text/javascript" charset="utf8">
+    $(document).ready( function () {
+        var table = $('#scores').DataTable( {
+            "ajax": {
+                "url": "/api/score",
+                "dataSrc": "objects",
+                "pagingType": "full_numbers"
+            },
+            "columns": [
+                { "data": "id" },
+                { "data": "score" },
+                { "data": "quiz_name" },
+                { "data": "timestamp" }
+            ]
+        } );
+    } );
+</script>
 {% endblock %}

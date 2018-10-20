@@ -1,5 +1,5 @@
-from flask import request, render_template, url_for
-from flask_login import login_required
+from flask import request, render_template, redirect, url_for
+from flask_login import current_user, login_required
 from app.user import bp
 from app.models import User
 
@@ -7,7 +7,11 @@ from app.models import User
 @bp.route('/')
 @login_required
 def index():
-    return render_template('user/index.html', title='Users')
+    # if not admin, return current user stats
+    return redirect(url_for('user.get_info', username=current_user.username))
+    # else
+    #return render_template('user/info.html', title='User Info',
+    #                       user_id=current_user.id)
 
 
 @bp.route('/<username>')

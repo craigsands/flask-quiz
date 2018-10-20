@@ -81,6 +81,7 @@ class Score(db.Model):
     score = db.Column(db.Float)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    result = db.Column(db.UnicodeText)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
     # User (parent) is one to many scores (children)

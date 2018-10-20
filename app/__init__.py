@@ -111,14 +111,18 @@ def create_app(test_config=None):
     # Otherwise, create_api() checks the database for the primary key before
     # the app context.
     with app.app_context():
-        manager.create_api(Quiz, app=app, methods=['GET', 'PATCH', 'POST',
-                                                   'DELETE'],
-                           results_per_page=0)
+        manager.create_api(Quiz, app=app,
+                           methods=['GET', 'PATCH', 'POST', 'DELETE'],
+                           allow_delete_many=True, results_per_page=0)
         manager.create_api(Question, app=app,
                            methods=['GET', 'POST', 'DELETE'],
                            allow_delete_many=True, results_per_page=0)
-        manager.create_api(Score, app=app)
-        manager.create_api(Subject, app=app)
+        manager.create_api(Score, app=app,
+                           methods=['GET', 'POST', 'DELETE'],
+                           allow_delete_many=True, results_per_page=0)
+        manager.create_api(Subject, app=app,
+                           methods=['GET', 'POST', 'DELETE'],
+                           allow_delete_many=True, results_per_page=0)
 
         # TODO: Only modify self, unless admin
         # https://flask-restless.readthedocs.io/en/stable/customizing.html#universal-preprocessors-and-postprocessors

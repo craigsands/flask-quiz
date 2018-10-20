@@ -42,7 +42,8 @@ def edit(quiz_id):
 @login_required
 def run(quiz_id):
     form = AnswerForm()
-    return render_template('quiz/question.html', form=form, quiz_id=quiz_id)
+    return render_template('quiz/question.html', quiz_id=quiz_id,
+                           user_id=current_user.id)
 
 #     # quiz = Quiz().load_from_excel(
 #     #     os.path.join(current_app.instance_path, 'quiz', '%s.xlsx' % quiz_title)

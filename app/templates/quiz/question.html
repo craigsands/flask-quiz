@@ -5,6 +5,7 @@
     <h1>Quiz {{ quiz_id }}</h1>
 
     <div id="surveyElement"></div>
+    <div id="questionResult"></div>
     <div id="surveyResult"></div>
 {% endblock %}
 
@@ -17,33 +18,105 @@
         $(document).ready( function () {
             Survey.StylesManager.applyTheme("bootstrap");
             Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
-            window.survey = new Survey.Model();
+            window.survey = new Survey.Model({
+                showProgressBar: "bottom",
+                showTimerPanel: "top",
+                maxTimeToFinishPage: 30,
+                //questionsOrder: "random",
+                firstPageIsStarted: true,
+                startSurveyText: "Start Quiz",
+                completedHtml: "<h4>You have answered correctly <b>{correctedAnswers}</b> questions from <b>{questionCount}</b>.</h4>"
+            });
 
-            var quiz_id = {{ quiz_id }};
+            var jqxhr = $.getJSON( "/api/quiz/" + {{ quiz_id }}, function() {
+              console.log( "success" );
+            })
+              .done(function( quiz ) {
+                var questions = quiz["questions"];
 
-            $.get({
-                url: "/api/quiz/" + quiz_id,
-                contentType: "application/json; charset=utf-8",
-                success: function(data){
-                    var page = survey.addNewPage("page1");
+                survey.title = quiz["name"];
+                survey.maxTimeToFinish = survey.maxTimeToFinishPage * questions.length;
 
-                    data["questions"].forEach( function( question ) {
-                        var q = page.addNewQuestion(
-                            "text", "question_" + question["id"]);
-                        q.title = question["prompt"];
-                    });
-                },
-                failure: function(errMsg) {
-                    alert(errMsg);
-                }
-            } );
+                var q = survey.addNewPage().addNewQuestion("html");
+                q.html = `You are about to start a quiz.<br/> You have
+                  ${survey.maxTimeToFinishPage} seconds for every page and
+                  ${(survey.maxTimeToFinish / 60)} minutes for the whole survey
+                  of ${questions.length} questions.<br/> Please click the <b>'
+                  ${survey.startSurveyText}'</b> button when you are ready.`;
+
+                questions.forEach( function( question ) {
+                    var page = survey.addNewPage();
+                    var q = page.addNewQuestion(
+                        "text", question["id"].toString());
+                    q.title = question["prompt"];
+                    q.correctAnswer = question["correct_answer"];
+                });
+                console.log( "second success" );
+              })
+              .fail(function( errMsg ) {
+                alert("error");
+                console.log(errMsg);
+                console.log( "error" );
+              })
+              .always(function() {
+                console.log( "complete" );
+              });
+
+            survey
+                .onIsAnswerCorrect
+                .add(function (options) {
+                  console.log(options);
+                  console.log(options.question);
+                  console.log(options.result);
+            //        document
+            //            .querySelector('#questionResult')
+            //            .innerHTML = "result: " + JSON.stringify(result);
+                });
 
             survey
                 .onComplete
                 .add(function (result) {
-                    document
-                        .querySelector('#surveyResult')
-                        .innerHTML = "result: " + JSON.stringify(result.data);
+                    //By default clear methods clear all data and go to the first page
+                    //Here we tell survey keep the data by passing the first parameter as false
+                    //result.clear(false);
+                    //Put survey into read-only mode
+                    //result.mode = "display";
+                    //Set survey to single page
+                    //result.isSinglePage = true;
+
+                    console.log("time spent: " + survey.timeSpent);
+
+                    //document
+                    //    .querySelector('#surveyResult')
+                    //    .innerHTML = "result: " + result_string;
+                    let post_data = {
+                      "score": survey.getCorrectedAnswerCount(),
+                      "quiz_id": {{ quiz_id }},
+                      "user_id": {{ user_id }},
+                      "result": JSON.stringify(result.data)
+                      //"result": JSON.stringify(result.data)
+                    };
+
+                    console.log(post_data);
+
+                    var jqxhr = $.post({
+                      url: "/api/score",
+                      contentType: "application/json; charset=UTF-8",
+                      data: JSON.stringify(post_data),
+                      success: function() {
+                        //alert( "success" );
+                      }})
+                      .done(function( response ) {
+                        //alert( "second success" );
+                      })
+                      .fail(function( errMsg ) {
+                        alert("error");
+                        console.log(errMsg.responseText);
+                        console.log( "error" );
+                      })
+                      .always(function() {
+                        //alert( "finished" );
+                      });
                 });
 
             $("#surveyElement").Survey({model: survey});
@@ -51,100 +124,3 @@
         } );
     </script>
 {% endblock scripts %}
-
-
-
-<!--<script type="text/javascript" charset="utf8">
-    $(document).ready( function () {
-        var quiz = {};
-        var quiz_id = {{ quiz_id }};
-
-        $.get({
-            url: "/api/quiz/" + quiz_id,
-            contentType: "application/json; charset=utf-8",
-            success: function(data){
-                var quiz = data;
-                location.href = "/quiz/edit/" + data["id"];
-            },
-            failure: function(errMsg) {
-                alert(errMsg);
-            }
-        } );
-    } );
-
-    $(document).ready( function () {
-        var table_selector = '#quizzes';
-
-        var table = $(table_selector).DataTable( {
-            "ajax": {
-                "url": "/api/quiz",
-                "dataSrc": "objects",
-                "pagingType": "full_numbers"
-            },
-            "columns": [
-                { "data": "id" },
-                { "data": "name" },
-                { "data": "user_name" },
-                { "data": "num_questions" },
-                { "data": "timestamp" },
-                {
-                    data: null,
-                    className: "center",
-                    defaultContent: '<a href="" class="edit_quiz">Edit</a> / <a href="" class="remove_quiz">Delete</a>'
-                }
-            ]
-        } );
-
-        $('#create').click(function() {
-            $.ajax({
-                type: "POST",
-                url: "/api/quiz",
-                data: JSON.stringify({}),
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                success: function(data){
-                    alert("Quiz created.");
-                    location.href = "/quiz/edit/" + data["id"];
-                },
-                failure: function(errMsg) {
-                    alert(errMsg);
-                }
-            } );
-        } );
-
-        // Edit a record
-        $(table_selector).on('click', 'a.edit_quiz', function (e) {
-            e.preventDefault();  // don't follow link
-
-            var row_data = table.row($(this).closest('tr')).data();
-            var quiz_id = row_data['id'];
-
-            location.href = "/quiz/edit/" + quiz_id;
-        } );
-
-        // Delete a record
-        $(table_selector).on('click', 'a.remove_quiz', function (e) {
-            e.preventDefault();  // don't follow link
-
-            var row = table.row($(this).closest('tr'));
-            var row_data = row.data();
-            var quiz_id = row_data['id'];
-            var quiz_name = row_data['name'];
-
-            $.ajax({
-                type: "DELETE",
-                url: "/api/quiz/" + quiz_id,
-                data: JSON.stringify({}),
-                contentType: "application/json; charset=utf-8",
-                success: function(data){
-                    alert("Quiz " + quiz_name + " deleted.");
-                    row.remove();
-                    row.draw();
-                },
-                failure: function(errMsg) {
-                    alert(errMsg);
-                }
-            } );
-        } );
-    } );
-</script>-->
