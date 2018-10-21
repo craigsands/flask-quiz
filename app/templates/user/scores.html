@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block app_content %}
+    <h1>{{ title }}</h1>
+
+    <table id="scores" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Score</th>
+                <th>Quiz ID</th>
+                <th>Quiz</th>
+                <th>Timestamp</th>
+                <th>Options</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script type="text/javascript" charset="utf8">
+    $(document).ready( function () {
+        var table_selector = '#scores';
+
+        var table = $(table_selector).DataTable( {
+            "ajax": {
+                "url": "/api/score",
+                "data": {
+                    "q": JSON.stringify({
+                        "filters": [{
+                            "name": "user_id",
+                            "op": "eq",
+                            "val": {{ user_id }}
+                        }]
+                    })
+                },
+                "dataSrc": "objects",
+                "pagingType": "full_numbers"
+            },
+            "columnDefs": [
+                {
+                    "targets": [ 2 ],
+                    "visible": false
+                }
+            ],
+            "columns": [
+                { "data": "id" },
+                { "data": "score" },
+                { "data": "quiz_id" },
+                { "data": "quiz_name" },
+                { "data": "timestamp" },
+                {
+                    data: null,
+                    className: "center",
+                    defaultContent: '<a href="" class="review">Review</a>'
+                }
+            ]
+        } );
+
+        // Review a quiz
+        $(table_selector).on('click', 'a.review', function (e) {
+            e.preventDefault();  // don't follow link
+
+            var row_data = table.row($(this).closest('tr')).data();
+            var score_id = row_data['id'];
+            var quiz_id = row_data['quiz_id'];
+
+            location.href = "/quiz/review/" + quiz_id + "/" + score_id;
+        } );
+    } );
+</script>
+{% endblock %}

@@ -26,6 +26,13 @@ def edit(quiz_id):
                            quiz_id=quiz_id)
 
 
+@bp.route('/review/<int:quiz_id>/<int:score_id>')
+@login_required
+def review(quiz_id, score_id):
+    return render_template('quiz/review.html', title='Review Quiz',
+                           quiz_id=quiz_id, score_id=score_id)
+
+
 # @bp.route('/<quiz_name>', methods=['GET', 'POST'])
 # # @login_required
 # def start(quiz_name):

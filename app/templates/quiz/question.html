@@ -18,11 +18,11 @@
         $(document).ready( function () {
             Survey.StylesManager.applyTheme("bootstrap");
             Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+            Survey.surveyStrings.loadingSurvey = "Please wait. Your quiz is loading…";
             window.survey = new Survey.Model({
                 showProgressBar: "bottom",
                 showTimerPanel: "top",
                 maxTimeToFinishPage: 30,
-                //questionsOrder: "random",
                 firstPageIsStarted: true,
                 startSurveyText: "Start Quiz",
                 completedHtml: "<h4>You have answered correctly <b>{correctedAnswers}</b> questions from <b>{questionCount}</b>.</h4>"
@@ -51,6 +51,9 @@
                     q.title = question["prompt"];
                     q.correctAnswer = question["correct_answer"];
                 });
+
+                survey.questionsOrder = "random"
+
                 console.log( "second success" );
               })
               .fail(function( errMsg ) {

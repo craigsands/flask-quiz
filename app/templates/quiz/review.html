@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <h1>Quiz {{ quiz_id }} Review</h1>
+
+    <div id="surveyElement"></div>
+    <div id="questionResult"></div>
+    <div id="surveyResult"></div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <!-- SurveyJS -->
+    <script src="https://surveyjs.azureedge.net/1.0.49/survey.jquery.min.js"></script>
+
+    <script type="text/javascript" charset="utf8">
+        $(document).ready( function () {
+            Survey.StylesManager.applyTheme("bootstrap");
+            Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+            Survey.surveyStrings.loadingSurvey = "Please wait. Your quiz is loading…";
+            window.survey = new Survey.Model({
+              startSurveyText: "Exit"
+            });
+
+            //Put survey into read-only mode
+            survey.mode = "display";
+            //Set survey to single page
+            survey.isSinglePage = true;
+
+            var jqxhr = $.getJSON( "/api/quiz/" + {{ quiz_id }}, function() {
+              console.log( "success" );
+            })
+              .done(function( quiz ) {
+                var questions = quiz["questions"];
+
+                survey.title = quiz["name"];
+
+                var page = survey.addNewPage();
+
+                questions.forEach( function( question ) {
+                    var q = page.addNewQuestion(
+                        "text", question["id"].toString());
+                    q.title = question["prompt"];
+                    q.correctAnswer = question["correct_answer"];
+                });
+
+                console.log( "second success" );
+
+                var jqxhr = $.getJSON( "/api/score/" + {{ score_id }})
+                  .done(function( score ) {
+                    survey.data = JSON.parse(score["result"]);
+                  });
+              })
+              .fail(function( errMsg ) {
+                alert("error");
+                console.log(errMsg);
+                console.log( "error" );
+              })
+              .always(function() {
+                console.log( "complete" );
+              });
+
+              survey
+                  .onComplete
+                  .add(function (result) {
+                      console.log('completed');
+                  });
+
+            $("#surveyElement").Survey({model: survey});
+
+        } );
+    </script>
+{% endblock scripts %}

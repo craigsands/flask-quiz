@@ -19,3 +19,10 @@ def index():
 def get_info(username):
     user = User.query.filter_by(username=username).first()
     return render_template('user/info.html', title='User Info', user=user)
+
+
+@bp.route('/scores')
+@login_required
+def get_scores():
+    return render_template('user/scores.html', title='Scores',
+                           user_id=current_user.id)

@@ -23,6 +23,7 @@ def main_nav():
     if current_user.is_authenticated:
         n.items.extend([
             View('Home', 'user.get_info', username=current_user.username),
+            View('Scores', 'user.get_scores'),
             Subgroup(
                 'Quizzes',
                 View('Manage', 'quiz.index'),
