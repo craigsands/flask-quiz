@@ -9,6 +9,7 @@
         <input type="text" id="quiz_name" name="quiz_name" />
 
         <button id="save">Save</button>
+        <button id="lock">Lock</button>
     </div>
 
     <div class="row">
@@ -140,7 +141,7 @@
         question_bank_table.draw();
     } );
 
-    $('#save').click(function() {
+    function save() {
         var quiz_name = $(quiz_name_selector).val();
         var questions = quiz_questions_table.rows().data().toArray();
         var question_ids = questions.map(function(q) { return {"id": q.id} });
@@ -155,6 +156,34 @@
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function(data){alert("Quiz " + quiz_name + " updated");},
+            failure: function(errMsg) {
+                alert(errMsg);
+            }
+        });
+    };
+
+    $('#save').click(function() {
+        save();
+    });
+
+    $('#lock').click(function() {
+        save();
+
+        var quiz_name = $(quiz_name_selector).val();
+
+        $.ajax({
+            type: "PATCH",
+            url: "/api/quiz/" + quiz_id,
+            data: JSON.stringify({
+                "locked": true
+            }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(data){
+                alert("Quiz " + quiz_name + " locked");
+
+                location.href = "/quiz/";
+            },
             failure: function(errMsg) {
                 alert(errMsg);
             }

@@ -21,6 +21,7 @@ class Quiz(db.Model):
                      default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),
                         default=lambda: current_user.id)
+    locked = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
     # User (parent) is one to many quizzes (children)

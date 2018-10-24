@@ -41,9 +41,16 @@
                 {
                     data: null,
                     className: "center",
-                    defaultContent: '<a href="" class="take_quiz">Take</a> / <a href="" class="edit_quiz">Edit</a> / <a href="" class="remove_quiz">Delete</a>'
+                    defaultContent: '<span class="actions"><a href="" class="take_quiz">Take</a><a href="" class="edit_quiz">Edit</a></span> / <a href="" class="remove_quiz">Delete</a>'
                 }
-            ]
+            ],
+            rowCallback: function(row, data, index) {
+              if (data.locked == true) {
+                $("td:eq(5) span.actions a.edit_quiz", row).css( "display", "none" );
+              } else {
+                $("td:eq(5) span.actions a.take_quiz", row).css( "display", "none" );
+              }
+            }
         } );
 
         $('#create').click(function() {

@@ -22,6 +22,11 @@ def index():
 @bp.route('/edit/<int:quiz_id>')
 @login_required
 def edit(quiz_id):
+    quiz = Quiz.query.filter_by(id=quiz_id).first()
+
+    if quiz.locked:
+        return redirect(url_for('quiz.index'))
+
     return render_template('quiz/edit.html', title='Edit Quiz',
                            quiz_id=quiz_id)
 
