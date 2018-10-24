@@ -54,7 +54,7 @@
                 {
                     data: null,
                     className: "center",
-                    defaultContent: '<a href="" class="review">Review</a>'
+                    defaultContent: '<a href="" class="review">Review</a> / <a href="" class="retake">Retake</a>'
                 }
             ]
         } );
@@ -68,6 +68,17 @@
             var quiz_id = row_data['quiz_id'];
 
             location.href = "/quiz/review/" + quiz_id + "/" + score_id;
+        } );
+
+        // Retake a quiz
+        $(table_selector).on('click', 'a.retake', function (e) {
+            e.preventDefault();  // don't follow link
+
+            var row_data = table.row($(this).closest('tr')).data();
+            var score_id = row_data['id'];
+            var quiz_id = row_data['quiz_id'];
+
+            location.href = "/quiz/" + quiz_id;
         } );
     } );
 </script>

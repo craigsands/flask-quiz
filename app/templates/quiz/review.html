@@ -62,6 +62,17 @@
               });
 
               survey
+                  .onAfterRenderQuestion
+                  .add(function (s, options) {
+                      console.log(options.question);
+                      console.log(options.question.id);
+                      console.log(options.question.correctAnswer);
+                      console.log(options.question.defaultValue);
+                      console.log(options.question.valueName);
+                      console.log(options.htmlElement);
+                  });
+
+              survey
                   .onComplete
                   .add(function (result) {
                       console.log('completed');

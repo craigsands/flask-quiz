@@ -12,6 +12,6 @@ def index():
     return redirect(url_for('auth.login'))
 
 
-@bp.route('/js')
+@bp.route('/test_js')
 def test_js():
-    return render_template('js.html')
+    return render_template('test_js.html')

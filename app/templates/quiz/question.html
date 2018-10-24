@@ -5,7 +5,6 @@
     <h1>Quiz {{ quiz_id }}</h1>
 
     <div id="surveyElement"></div>
-    <div id="questionResult"></div>
     <div id="surveyResult"></div>
 {% endblock %}
 
@@ -13,6 +12,9 @@
     {{ super() }}
     <!-- SurveyJS -->
     <script src="https://surveyjs.azureedge.net/1.0.49/survey.jquery.min.js"></script>
+
+    <!-- UnderscoreJS -->
+    <script src="https://underscorejs.org/underscore-min.js"></script>
 
     <script type="text/javascript" charset="utf8">
         $(document).ready( function () {
@@ -24,15 +26,13 @@
                 showTimerPanel: "top",
                 maxTimeToFinishPage: 30,
                 firstPageIsStarted: true,
-                startSurveyText: "Start Quiz",
-                completedHtml: "<h4>You have answered correctly <b>{correctedAnswers}</b> questions from <b>{questionCount}</b>.</h4>"
             });
 
             var jqxhr = $.getJSON( "/api/quiz/" + {{ quiz_id }}, function() {
               console.log( "success" );
             })
               .done(function( quiz ) {
-                var questions = quiz["questions"];
+                var questions = _.shuffle(quiz["questions"]);
 
                 survey.title = quiz["name"];
                 survey.maxTimeToFinish = survey.maxTimeToFinishPage * questions.length;
@@ -52,8 +52,6 @@
                     q.correctAnswer = question["correct_answer"];
                 });
 
-                survey.questionsOrder = "random"
-
                 console.log( "second success" );
               })
               .fail(function( errMsg ) {
@@ -66,14 +64,28 @@
               });
 
             survey
-                .onIsAnswerCorrect
-                .add(function (options) {
-                  console.log(options);
-                  console.log(options.question);
-                  console.log(options.result);
-            //        document
-            //            .querySelector('#questionResult')
-            //            .innerHTML = "result: " + JSON.stringify(result);
+              .onValidateQuestion
+              .add(function (s, options) {
+                options.question.readOnly = true;
+
+                if (options.value != options.question.correctAnswer) {
+                  options.error = "Incorrect.";
+                    if (true == true) {
+                      options.error += ` The correct answer is
+                         '${options.question.correctAnswer}'.`;
+                    }
+                }
+              });
+
+            survey
+                .onCompleting
+                .add(function (s, options) {
+                  console.log("time spent: " + s.timeSpent);
+
+                  s.completedHtml = `<h4>You have answered correctly
+                    <b>{correctedAnswers}</b> out of
+                    <b>{questionCount}</b> questions in ${s.timeSpent} seconds.
+                    </h4>`;
                 });
 
             survey
@@ -86,8 +98,6 @@
                     //result.mode = "display";
                     //Set survey to single page
                     //result.isSinglePage = true;
-
-                    console.log("time spent: " + survey.timeSpent);
 
                     //document
                     //    .querySelector('#surveyResult')
@@ -110,6 +120,12 @@
                         //alert( "success" );
                       }})
                       .done(function( response ) {
+                        let quiz_id = response["quiz_id"];
+                        let score_id = response["id"];
+
+                        document
+                            .querySelector('#surveyResult')
+                            .innerHTML = '<a href="/quiz/review/' + quiz_id + '/' + score_id + '" class="review">Review</a>'
                         //alert( "second success" );
                       })
                       .fail(function( errMsg ) {
