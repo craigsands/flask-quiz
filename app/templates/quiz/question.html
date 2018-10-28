@@ -35,7 +35,9 @@
 
                 survey.title = quiz["name"];
                 //survey.maxTimeToFinish = survey.maxTimeToFinishPage * questions.length;
-                survey.maxTimeToFinish = quiz["time_to_finish"];
+
+                // set maxTimeToFinish to seconds instead of minutes
+                survey.maxTimeToFinish = parseInt(quiz["time_to_finish"], 10) * 60;
 
                 var q = survey.addNewPage().addNewQuestion("html");
                 //q.html = `You are about to start a quiz.<br/> You have
@@ -45,7 +47,7 @@
                 //  ${survey.startSurveyText}'</b> button when you are ready.`;
 
                 q.html = `You are about to start a quiz.<br/> You have
-                  ${survey.maxTimeToFinish} seconds for the whole survey
+                  ${(survey.maxTimeToFinish / 60)} minutes for the whole survey
                   of ${questions.length} questions.<br/> Please click the <b>'
                   ${survey.startSurveyText}'</b> button when you are ready.`;
 

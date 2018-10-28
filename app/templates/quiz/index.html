@@ -48,9 +48,9 @@
             ],
             rowCallback: function(row, data, index) {
               if (data.locked == true) {
-                $("td:eq(5) span.actions a.edit_quiz", row).css( "display", "none" );
+                $("td:eq(6) span.actions a.edit_quiz", row).css( "display", "none" );
               } else {
-                $("td:eq(5) span.actions a.take_quiz", row).css( "display", "none" );
+                $("td:eq(6) span.actions a.take_quiz", row).css( "display", "none" );
               }
             }
         } );
