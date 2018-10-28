@@ -24,7 +24,6 @@
             window.survey = new Survey.Model({
                 showProgressBar: "bottom",
                 showTimerPanel: "top",
-                maxTimeToFinishPage: 30,
                 firstPageIsStarted: true,
             });
 
@@ -35,12 +34,18 @@
                 var questions = _.shuffle(quiz["questions"]);
 
                 survey.title = quiz["name"];
-                survey.maxTimeToFinish = survey.maxTimeToFinishPage * questions.length;
+                //survey.maxTimeToFinish = survey.maxTimeToFinishPage * questions.length;
+                survey.maxTimeToFinish = quiz["time_to_finish"];
 
                 var q = survey.addNewPage().addNewQuestion("html");
+                //q.html = `You are about to start a quiz.<br/> You have
+                //  ${survey.maxTimeToFinishPage} seconds for every page and
+                //  ${(survey.maxTimeToFinish / 60)} minutes for the whole survey
+                //  of ${questions.length} questions.<br/> Please click the <b>'
+                //  ${survey.startSurveyText}'</b> button when you are ready.`;
+
                 q.html = `You are about to start a quiz.<br/> You have
-                  ${survey.maxTimeToFinishPage} seconds for every page and
-                  ${(survey.maxTimeToFinish / 60)} minutes for the whole survey
+                  ${survey.maxTimeToFinish} seconds for the whole survey
                   of ${questions.length} questions.<br/> Please click the <b>'
                   ${survey.startSurveyText}'</b> button when you are ready.`;
 
