@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Quick Quizzes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Datatables -->
+    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css" rel="stylesheet">
+  </head>
+  <body>
+    <h1 id="title"></h1>
+
+    <div id="surveyElement"></div>
+    <div id="surveyResult"></div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+    <!-- Bootstrap -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
+    <!-- Datatables -->
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+
+    <!-- SurveyJS -->
+    <script src="https://surveyjs.azureedge.net/1.0.49/survey.jquery.min.js"></script>
+
+    <!-- UnderscoreJS -->
+    <script src="https://underscorejs.org/underscore-min.js"></script>
+
+    <script type="text/javascript" charset="utf8">
+        $(document).ready( function () {
+            Survey.StylesManager.applyTheme("bootstrap");
+            Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+            Survey.surveyStrings.loadingSurvey = "Please wait. Loading quiz...";
+            window.survey = new Survey.Model({
+                showProgressBar: "bottom",
+                showTimerPanel: "top",
+                maxTimeToFinishPage: 0,  //30,
+                firstPageIsStarted: true
+            });
+
+            var jqxhr = $.getJSON( "/api/quiz/" + 1, function() {
+              console.log( "quiz data retrieved from api" );
+            })
+              .done(function( quiz ) {
+                var questions = _.shuffle(quiz["questions"]);
+
+                survey.title = quiz["name"];
+                survey.maxTimeToFinish = survey.maxTimeToFinishPage * questions.length;
+
+                var q = survey.addNewPage().addNewQuestion("html");
+                q.html = `You are about to start a quiz.<br/> You have
+                  ${survey.maxTimeToFinishPage} seconds for every page and
+                  ${(survey.maxTimeToFinish / 60)} minutes for the whole survey
+                  of ${questions.length} questions.<br/> Please click the <b>
+                  '${survey.startSurveyText}'</b> button when you are ready.`;
+
+                questions.forEach( function( question ) {
+                    var page = survey.addNewPage();
+                    var q = page.addNewQuestion(
+                        "text", question["id"].toString());
+                    q.title = question["prompt"];
+                    q.correctAnswer = question["correct_answer"];
+                });
+
+                console.log( "quiz built" );
+              })
+              .fail(function( errMsg ) {
+                alert("error");
+                console.log(errMsg);
+                console.log( "error" );
+              })
+              .always(function() {
+                //console.log( "complete" );
+              });
+
+            survey
+              .onValidateQuestion
+              .add(function (s, options) {
+                options.question.readOnly = true;
+
+                if (options.value != options.question.correctAnswer) {
+                  options.error = "Incorrect.";
+                    if (true == true) {
+                      options.error += ` The correct answer is
+                         '${options.question.correctAnswer}'.`;
+                    }
+                }
+                else {
+                  if (s.isLastPage != true) {
+                    s.nextPage();
+                  }
+                }
+              });
+
+            survey
+                .onCompleting
+                .add(function (s, options) {
+                  console.log("time spent: " + s.timeSpent);
+
+                  s.completedHtml = `<h4>You have answered correctly
+                    <b>{correctedAnswers}</b> out of
+                    <b>{questionCount}</b> questions in ${s.timeSpent} seconds.
+                    </h4>`;
+                });
+
+            survey
+                .onComplete
+                .add(function (s, options) {
+                    //By default clear methods clear all data and go to the first page
+                    //Here we tell survey keep the data by passing the first parameter as false
+                    //result.clear(false);
+                    //Put survey into read-only mode
+                    //result.mode = "display";
+                    //Set survey to single page
+                    //result.isSinglePage = true;
+
+                    //document
+                    //    .querySelector('#surveyResult')
+                    //    .innerHTML = "result: " + result_string;
+                    let post_data = {
+                      "score": s.getCorrectedAnswerCount(),
+                      "quiz_id": 1,
+                      "user_id": 1,
+                      "result": JSON.stringify(s.data)
+                    };
+
+                    console.log(post_data);
+
+                    // var jqxhr = $.post({
+                    //   url: "/api/score",
+                    //   contentType: "application/json; charset=UTF-8",
+                    //   data: JSON.stringify(post_data),
+                    //   success: function() {
+                    //     //alert( "success" );
+                    //   }})
+                    //   .done(function( response ) {
+                    //     //alert( "second success" );
+                    //   })
+                    //   .fail(function( errMsg ) {
+                    //     alert("error");
+                    //     console.log(errMsg.responseText);
+                    //     console.log( "error" );
+                    //   })
+                    //   .always(function() {
+                    //     //alert( "finished" );
+                    //   });
+                });
+
+            $("#surveyElement").Survey({model: survey});
+
+        } );
+    </script>
+
+</html>

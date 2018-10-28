@@ -1,18 +1,24 @@
 import errno
+import logging
 import os
 from flask import Flask
+from flask_babel import Babel, lazy_gettext as _l
 from flask_bootstrap import Bootstrap
 from flask_login import current_user, LoginManager
+from flask_mail import Mail
 from flask_nav import Nav
 from flask_nav.elements import Navbar, Subgroup, View
 from flask_sqlalchemy import SQLAlchemy
-from flask_restless import APIManager
+from flask_restless import APIManager, ProcessingException
+from logging.handlers import SMTPHandler
 
 
+babel = Babel()
 bootstrap = Bootstrap()
 db = SQLAlchemy()
 login = LoginManager()
 login.login_view = 'auth.login'
+mail = Mail()
 manager = APIManager(flask_sqlalchemy_db=db)
 nav = Nav()
 
@@ -49,6 +55,11 @@ def create_app(test_config=None):
 
     # update config with environment variables or defaults
     app.config.from_mapping(
+        MAIL_SERVER=os.environ.get('MAIL_SERVER'),
+        MAIL_PORT=int(os.environ.get('MAIL_PORT') or 25),
+        MAIL_USE_TLS=os.environ.get('MAIL_USE_TLS') is not None,
+        MAIL_USERNAME=os.environ.get('MAIL_USERNAME'),
+        MAIL_PASSWORD=os.environ.get('MAIL_PASSWORD'),
         SECRET_KEY=os.environ.get('SECRET_KEY', os.urandom(24)),
         SQLALCHEMY_DATABASE_URI=os.environ.get(
             'DATABASE_URI',
@@ -73,9 +84,11 @@ def create_app(test_config=None):
             raise
 
     # initialize extensions
+    babel.init_app(app)
     bootstrap.init_app(app)
     db.init_app(app)
     login.init_app(app)
+    mail.init_app(app)
     manager.init_app(app)
     nav.init_app(app)
 
@@ -83,6 +96,9 @@ def create_app(test_config=None):
     db.create_all(app=app)
 
     # register module endpoints
+    from app.errors import bp as errors_bp
+    app.register_blueprint(errors_bp)
+
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
@@ -100,9 +116,9 @@ def create_app(test_config=None):
 
     # Create authentication wrapper for API requests
     def auth_func(*args, **kwargs):
-        #if not current_user.is_authenticated():
-        #    raise ProcessingException(description='Not authenticated!',
-        #                             code=401)
+        if not current_user.is_authenticated():
+            raise ProcessingException(description='Not authenticated!',
+                                      code=401)
         return True
 
     # register api endpoints
@@ -137,6 +153,23 @@ def create_app(test_config=None):
                                               DELETE_SINGLE=[auth_func],
                                               DELETE_MANY=[auth_func]),
                            primary_key='username')
+
+        if not app.debug and not app.testing:
+            if app.config['MAIL_SERVER']:
+                auth = None
+                if app.config['MAIL_USERNAME'] or app.config['MAIL_PASSWORD']:
+                    auth = (app.config['MAIL_USERNAME'],
+                            app.config['MAIL_PASSWORD'])
+                secure = None
+                if app.config['MAIL_USE_TLS']:
+                    secure = ()
+                mail_handler = SMTPHandler(
+                    mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
+                    fromaddr='no-reply@' + app.config['MAIL_SERVER'],
+                    toaddrs=app.config['ADMINS'], subject='Quick Quizzes Failure',
+                    credentials=auth, secure=secure)
+                mail_handler.setLevel(logging.ERROR)
+                app.logger.addHandler(mail_handler)
 
     return app
 

@@ -8,8 +8,12 @@
         <label for="quiz_name">Name:</label>
         <input type="text" id="quiz_name" name="quiz_name" />
 
+        <label for="time_to_finish">Time to Finish:</label>
+        <input type="number" id="time_to_finish" name="time_to_finish" />
+
         <button id="save">Save</button>
         <button id="lock">Lock</button>
+        <button id="randomize">Randomize</button>
     </div>
 
     <div class="row">
@@ -48,15 +52,21 @@
 
 {% block scripts %}
 {{super()}}
+
+<!-- UnderscoreJS -->
+<script src="https://underscorejs.org/underscore-min.js"></script>
+
 <script type="text/javascript" charset="utf8">
   $(document).ready( function () {
     var quiz_id = {{ quiz_id }};
     var quiz_name_selector = '#quiz_name';
     var quiz_question_selector = '#quiz_questions';
     var question_bank_selector = '#question_bank';
+    var time_to_finish_selector = '#time_to_finish';
 
     $.get("/api/quiz/" + quiz_id, function(data, status){
         $(quiz_name_selector).val(data['name']);
+        $(time_to_finish_selector).val(parseInt(data['time_to_finish'], 10));
     });
 
     var quiz_questions_table = $(quiz_question_selector).DataTable( {
@@ -143,19 +153,27 @@
 
     function save() {
         var quiz_name = $(quiz_name_selector).val();
+        var time_to_finish = parseInt($(time_to_finish_selector).val(), 10);
         var questions = quiz_questions_table.rows().data().toArray();
         var question_ids = questions.map(function(q) { return {"id": q.id} });
+        console.log('saving');
 
         $.ajax({
             type: "PATCH",
             url: "/api/quiz/" + quiz_id,
             data: JSON.stringify({
                 "name": quiz_name,
-                "questions": question_ids
+                "questions": question_ids,
+                "time_to_finish": time_to_finish
             }),
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function(data){alert("Quiz " + quiz_name + " updated");},
+            error: function(response, error, msg){
+              console.log(response);
+              console.log(error + ": " + msg);
+              alert("Failure to save: " + response.responseJSON.message + ". Does a quiz named " + quiz_name + " already exist?");
+            },
             failure: function(errMsg) {
                 alert(errMsg);
             }
@@ -188,6 +206,28 @@
                 alert(errMsg);
             }
         });
+    });
+
+    $('#randomize').click(function() {
+      let num_rows_available = question_bank_table.rows().data().length;
+      let num_rows = parseInt(prompt("How many questions would you like to add?", 10), 10);
+      if (num_rows > num_rows_available) {
+        num_rows = num_rows_available;
+      }
+      let random_subset = _.shuffle(Array(num_rows).fill().map((item, index) => 0 + index))
+
+      question_bank_table.rows().every(function () {
+        if (random_subset.includes(this.index())) {
+          console.log("removing " + this.index());
+          var $row = $(this);
+          var addRow = question_bank_table.row($row);
+          quiz_questions_table.row.add(addRow.data());
+          addRow.remove();
+        }
+      });
+
+      question_bank_table.draw();
+      quiz_questions_table.draw();
     });
   } );
   </script>
