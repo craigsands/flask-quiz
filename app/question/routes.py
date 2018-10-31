@@ -1,12 +1,14 @@
 import errno
 import os
+import random
+import time
 from flask import (
     current_app, flash, redirect, render_template, request, url_for)
 from flask_login import login_required
 from openpyxl import load_workbook
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import Question, Subject
+from app.models import Question, Quiz, Subject
 from app.question import bp
 from app.question.forms import UploadQuizForm
 
@@ -39,6 +41,9 @@ def upload():
                 f.save(filepath)
                 current_app.logger.info('file saved to {}'.format(filepath))
 
+                # collect questions for adding to sample quiz
+                questions = []
+
                 # uploading a file creates (num_columns-1)*2*rows questions
                 # questions are added to questions table
                 # on first upload a quiz is created containing all questions
@@ -68,6 +73,7 @@ def upload():
                                 correct_answer=value
                             )
                             db.session.add(question)
+                            questions.append(question)
 
                             # Question the key, knowing the value
                             inverse = Question(
@@ -78,9 +84,21 @@ def upload():
                                 correct_answer=primary_value
                             )
                             db.session.add(inverse)
+                            questions.append(inverse)
 
                 db.session.commit()
                 flash('Congratulations, you just uploaded questions!')
+
+                if form.create_quiz.data:
+                    current_millis = int(round(time.time() * 1000))
+                    quiz_name = '%s-%s' % (filename, current_millis)
+                    quiz = Quiz(name=quiz_name)
+                    sample_size = min(len(questions), 10)
+                    quiz.questions = random.sample(questions, sample_size)
+                    db.session.add(quiz)
+                    db.session.commit()
+                    flash('Quiz created with %s random questions.' %
+                          sample_size)
 
             finally:
                 return redirect(url_for('question.index'))
