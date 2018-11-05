@@ -88,7 +88,7 @@ Database-driven quiz history | <del>4</del> <del>6</del> 7 | :heavy_check_mark:
 GUI based on Bootstrap 4 and/or Material Design | 6 |
 Public / Private Quizzes | 2 |
 Quiz Modes<br>- Instant Feedback<br>- Test<br>- Retake Incorrect<br>- Flash Cards<br>- Multiple Choice | <br>0<br>1<br>1<br>2<br>3 | 
-**Total** | **<del>22</del> 20**
+**Total** | **31**
 
 ### Flask page with sample data & score tracking
 The website engine is driven by the Flask microframework. Hard-coded sample data will be converted to questions dynamically on page load, and sessions will be used to track answers and scores.
