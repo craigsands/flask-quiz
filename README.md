@@ -84,8 +84,10 @@ Flask page with sample data & score tracking | 5 | :heavy_check_mark:
 Simple Excel-driven quiz | <del>3</del> 2 | :heavy_check_mark:
 Percentage points off | <del>3</del> 2 |
 Directory-based Quiz selection | <del>2</del> 0 | :heavy_check_mark:
-Database-driven quiz history | <del>4</del> 6 |
-Material Design-based GUI | 5 |
+Database-driven quiz history | <del>4</del> <del>6</del> 7 | :heavy_check_mark:
+GUI based on Bootstrap 4 and/or Material Design | 6 |
+Public / Private Quizzes | 2 |
+Quiz Modes<br>- Instant Feedback<br>- Test<br>- Retake Incorrect<br>- Flash Cards<br>- Multiple Choice | <br>0<br>1<br>1<br>2<br>3 | 
 **Total** | **<del>22</del> 20**
 
 ### Flask page with sample data & score tracking
